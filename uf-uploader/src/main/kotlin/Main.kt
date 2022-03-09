@@ -1,9 +1,7 @@
 import fi.sobolev.uffn.*
-import fi.sobolev.uffn.fetching.*
 import fi.sobolev.uffn.server.*
 import fi.sobolev.uffn.services.*
 import io.javalin.Javalin
-import io.javalin.websocket.WsContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -25,124 +23,6 @@ private val shouldShutdown =  AtomicBoolean(false)
 
 private val logger = KotlinLogging.logger {}
 private val requestPattern = """(\w+)\.(.+)""".toRegex()
-private val uuidPattern = """^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$""".toRegex()
-
-// uuid regex from https://stackoverflow.com/a/20044013
-
-
-fun handleAuthLogin(ctrl: AuthController, ctx: WsContext, req: AuthLoginRequest) {
-    if (req.user == 1 && req.key == "TESTTESTTEST") {
-        val user = ctrl.users.findOneOrNull(id = req.user)
-        if (user == null) {
-            ctx.sendPayload(ErrorResponse("failed to authenticate test/dev connection"))
-            return
-        }
-        logger.info { "authenticated user ${user.login} (${user.email}) with test credentials" }
-        runBlocking { ctrl.sessions.addContext(ctx, user) }
-        ctx.sendPayload(AuthLoginSucceededResponse())
-        return
-    }
-    ctx.sendPayload(AuthLoginFailedResponse("test credentials not accepted"))
-}
-
-fun handleUploadCreate(ctrl: UploadController, ctx: WsContext, req: UploadCreateRequest) {
-    val user = runBlocking { ctrl.sessions.getUser(ctx) }
-    if (user == null) {
-        ctx.sendPayload(ErrorResponse("failed to map session to user"))
-        return
-    }
-
-    val response = UploadCreatedResponse()
-    req.urls.forEach { str ->
-        val storyInfo = StoryUrl.parse(str)
-        if (storyInfo == null) {
-            response.addFailed(url = str, reason = "input url not supported")
-            return@forEach
-        }
-
-        val (archive, identifier) = storyInfo
-        val (newUpload, error) = ctrl.uploads.createFor(user, archive, identifier)
-
-        if (newUpload == null) {
-            response.addFailed(url = str, reason = error)
-            return@forEach
-        }
-
-        response.addCreated(newUpload)
-    }
-
-    // debug
-    response.created.forEach { entry ->
-        logger.warn { "created upload with uuid = ${entry.guid}" }
-    }
-    // end debug
-
-    ctrl.sendTo(user, payload = response)
-}
-
-fun handleUploadRemove(ctrl: UploadController, ctx: WsContext, req: UploadRemoveRequest) {
-    val user = runBlocking { ctrl.sessions.getUser(ctx) }
-    if (user == null) {
-        ctx.sendPayload(ErrorResponse("failed to map session to user"))
-        return
-    }
-
-    val response = UploadRemovedResponse()
-    req.guids.forEach { str ->
-        if (uuidPattern.matchEntire(str) == null) {
-            response.addFailed(str, "not a valid guid")
-            return@forEach
-        }
-        val guid = UUID.fromString(str)
-        val (deleted, why) = ctrl.uploads.deleteFor(owner = user, guid)
-        if (!deleted) {
-            response.addFailed(str, why)
-            return@forEach
-        }
-        response.addRemoved(str)
-    }
-
-    ctrl.sendTo(user, payload = response)
-}
-
-fun handleUploadGetLogs(ctrl: UploadController, ctx: WsContext, req: UploadGetLogsRequest) {
-    val user = runBlocking { ctrl.sessions.getUser(ctx) }
-    if (user == null) {
-        ctx.sendPayload(ErrorResponse("failed to map session to user"))
-        return
-    }
-
-    val upload = ctrl.uploads.findOneFor(owner = user, req.guid)
-    if (upload == null) {
-        ctx.sendPayload(ErrorResponse("failed to find upload by this guid"))
-        return
-    }
-
-    val logs = ctrl.uploads.getLogs(upload.guid)
-
-    val response = UploadInfoResponse()
-    response.addUpload(upload, logs)
-
-    ctx.sendPayload(response)
-}
-
-
-fun notifyUploadChange(service: IUploadService, uuid: UUID) {
-    val upload = service.findOne(uuid)
-    if (upload == null) {
-        logger.warn { "UNQ task contained an UUID which didn't match any upload: $uuid" }
-        return
-    }
-
-    val notification = UploadInfoResponse()
-    notification.addUpload(upload, logs = service.getLogs(uuid))
-
-    runBlocking {
-        sessionRegistry.forUser(upload.owner) {
-            it.sendPayload(notification)
-        }
-    }
-}
 
 
 fun main(args: Array<String>) {
@@ -201,7 +81,7 @@ fun makeRedisConnection(config: Config.RedisConfig): JedisPool {
 }
 
 fun makeControllers(): Map<String, BaseController> {
-    val uploadService = LocalUploadService(gDbConn)
+    val uploadService = LocalUploadService(gDbConn, gRedisConn)
     val userService = LocalUserService(gDbConn)
 
     // handles all login-logout logic
@@ -228,21 +108,24 @@ fun makeControllers(): Map<String, BaseController> {
     )
 }
 
+
 fun startRedisListener(config: Config.RedisConfig) {
     val pollThread = Thread {
         gRedisConn.use { pool ->
-            val uploadService = LocalUploadService(gDbConn)
+            val uploadService = LocalUploadService(gDbConn, gRedisConn)
 
             val kInputQueue = "uffn-update"
-            val kBlockInterval = config.interval.toString()
+            val kBlockInterval = config.interval.toDouble()
 
             logger.info { "starting polling the update notification queue (UNQ)" }
 
             pool.resource.use { conn ->
                 while (!shouldShutdown.get()) {
-                    val item = conn.brpop(kInputQueue, kBlockInterval)
+                    val item = conn.brpop(kBlockInterval, kInputQueue)
                     if (item != null) {
-                        val (queue, task) = item
+                        val queue = item.key
+                        val task = item.element
+
                         logger.info { "UNQ loop - retrieved $task from $queue" }
 
                         var uuid: UUID
@@ -253,7 +136,20 @@ fun startRedisListener(config: Config.RedisConfig) {
                             continue
                         }
 
-                        notifyUploadChange(uploadService, uuid)
+                        val upload = uploadService.findOne(uuid)
+                        if (upload == null) {
+                            logger.warn { "UNQ task contained an UUID which didn't match any upload: $uuid" }
+                            continue
+                        }
+
+                        val notification = UploadInfoResponse()
+                        notification.addUpload(upload, logs = uploadService.getLogs(uuid))
+
+                        runBlocking {
+                            sessionRegistry.forUser(upload.owner) {
+                                it.sendPayload(notification)
+                            }
+                        }
                     }
                 }
             }

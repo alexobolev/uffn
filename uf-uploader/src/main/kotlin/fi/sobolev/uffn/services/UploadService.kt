@@ -7,6 +7,7 @@ import org.ktorm.dsl.and
 import org.ktorm.dsl.eq
 import org.ktorm.dsl.less
 import org.ktorm.entity.*
+import redis.clients.jedis.JedisPool
 
 
 interface IUploadService {
@@ -20,7 +21,8 @@ interface IUploadService {
 
 
 class LocalUploadService (
-    private val db: Database
+    private val db: Database,
+    private val redis: JedisPool
 ) : IUploadService {
     override fun findOne(guid: UUID): Upload? {
         return db.sequenceOf(Uploads).firstOrNull { it.guid eq guid }
@@ -68,6 +70,10 @@ class LocalUploadService (
 
         val justCreated = uploads.find { it.guid eq upload.guid }
             ?: return Pair(null, "internal entity creation failed")
+
+        redis.resource.use {
+            it.rpush("uffn-fetch", upload.guid.toString())
+        }
 
         return Pair(justCreated, "")
     }
