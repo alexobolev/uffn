@@ -8,6 +8,12 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 
+/**
+ * Data from AO3 story's meta block.
+ *
+ * On AO3 page, visible as the very first story page block,
+ * before even the title, summary or chapter contents.
+ */
 data class AO3WorkMeta (
     var ratings: List<AO3Rating> = listOf(),
     var warnings: List<AO3Warning> = listOf(),
@@ -57,6 +63,9 @@ data class AO3WorkMeta (
     }
 }
 
+/**
+ * Most basic data of an AO3 story.
+ */
 data class AO3WorkInfo (
     var title: String = "",
     var authors: List<String> = listOf(),
@@ -74,6 +83,9 @@ data class AO3WorkInfo (
     }
 }
 
+/**
+ * Info about a single AO3 chapter.
+ */
 data class AO3ChapterData (
     var id: Long = 0,
     var title: String? = null,
@@ -94,6 +106,10 @@ data class AO3ChapterData (
 }
 
 
+/**
+ * Encapsulation of DOM-parsing logic for an AO3 story page
+ * holding contents of the entire story (with all the chapters).
+ */
 class AO3StoryPage (
     html: String
 ) {

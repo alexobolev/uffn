@@ -16,7 +16,7 @@ class AO3Parser (
         val story = AO3Story(id = storyId)
 
         val url = "${baseUrl}/works/${story.id}?view_full_work=true"
-        val page = AO3StoryPage(html = getHtml(url))
+        val page = AO3StoryPage(html = browser.getContents(url))
 
         with (page) {
             getWorkMeta().applyTo(story)
@@ -29,7 +29,4 @@ class AO3Parser (
 
         return story
     }
-
-    private fun getHtml(url: String): String =
-        browser.getContents(url)
 }

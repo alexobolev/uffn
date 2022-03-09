@@ -182,18 +182,3 @@ CREATE TABLE upload_logs (
             REFERENCES uploads (guid)
         ON DELETE CASCADE
 );
-
-
-CREATE TABLE upload_contents (
-    id SERIAL PRIMARY KEY,
-    upload_guid UUID NOT NULL,  -- references uploads (guid)
-    key VARCHAR NOT NULL,
-    value TEXT,
-
-    CONSTRAINT fk_upload
-        FOREIGN KEY (upload_guid)
-            REFERENCES uploads (guid)
-        ON DELETE CASCADE,
-
-    UNIQUE (upload_guid, key)
-);

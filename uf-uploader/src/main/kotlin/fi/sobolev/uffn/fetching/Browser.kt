@@ -1,24 +1,17 @@
 package fi.sobolev.uffn.fetching
 
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.logging.Level
 import java.util.logging.Logger
-import mu.KotlinLogging
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeDriverService
 import org.openqa.selenium.chrome.ChromeOptions
-import java.io.File
 
-
-data class ResponseInfo (
-    val code: Int,
-    val contents: String
-)
 
 interface Browser {
     /**
@@ -33,10 +26,13 @@ class StaticBrowser : Browser {
     override fun getContents(address: String): String {
         val url = URL(address)
         val conn = (url.openConnection() as HttpURLConnection).also {
-            // @todo    Set UA according to include "bot"
-            // @see     https://archiveofourown.org/admin_posts/18804
-            // it.addRequestProperty("User-Agent", "< ... >")
+             it.addRequestProperty("User-Agent", "uffn/0.1.0 self-hosted fanfic aggregation bot.")
         }
+
+        // @TODO REMOVE BELOW
+        conn.connect()
+        println("Capacity = ${conn.contentLength}")
+        // @TODO REMOVE ABOVE
 
         val responseContent = StringBuilder()
 
@@ -97,11 +93,13 @@ class SeleniumBrowser : Browser {
 
 
 class DiskMockBrowser (
-    val regex: Regex,
-    val resolver: (MatchResult) -> String
+    private val regex: Regex,
+    private val resolver: (MatchResult) -> String
 ) : Browser {
     override fun getContents(address: String): String {
-        val match = regex.matchEntire(address) ?: throw Exception("failed to match mock address")
-        return File(resolver(match)).readText()
+        val filePath = regex.matchEntire(address)?.let(resolver)
+            ?: throw Exception("failed to match mock address")
+
+        return File(filePath).readText()
     }
 }
