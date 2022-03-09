@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="uffn-all" type="CompoundRunConfigurationType">
+    <toRun name="uffn-parser" type="JetRunConfigurationType" />
+    <toRun name="uffn-sockets" type="JetRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

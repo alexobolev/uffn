@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="uffn-sockets" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="fi.sobolev.uffn.sockets.MainKt" />
+    <module name="uffn-sockets" />
+    <option name="PROGRAM_PARAMETERS" value="-Dcolor" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
