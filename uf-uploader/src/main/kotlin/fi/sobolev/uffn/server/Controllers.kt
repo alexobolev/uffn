@@ -1,6 +1,8 @@
 package fi.sobolev.uffn.server
 
+import fi.sobolev.uffn.data.User
 import fi.sobolev.uffn.services.IUploadService
+import fi.sobolev.uffn.services.IUserService
 import io.javalin.websocket.WsContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
@@ -22,11 +24,17 @@ inline fun <reified T : ServerPayload> WsContext.sendPayload(payload: T) {
 
 
 abstract class BaseController (
-    val sessionRegistry: SessionRegistry
+    val sessions: SessionRegistry
 ) {
     val handlerMap = mutableMapOf<String, HandlerCallback>()
 
     abstract fun before(ctx: WsContext, payload: JsonElement): Boolean
+
+    inline fun <reified T: ServerPayload> sendTo(user: User, payload: T): Unit = runBlocking {
+        sessions.forUser(user) {
+            it.sendPayload(payload)
+        }
+    }
 
     inline fun <reified C : BaseController, reified T : ClientPayload> register (
         request: String,
@@ -42,8 +50,9 @@ abstract class BaseController (
 }
 
 class AuthController (
-    sessionRegistry: SessionRegistry
-) : BaseController(sessionRegistry) {
+    sessions: SessionRegistry,
+    val users: IUserService
+) : BaseController(sessions) {
 
     override fun before(ctx: WsContext, payload: JsonElement): Boolean {
         return true
@@ -51,13 +60,13 @@ class AuthController (
 }
 
 class UploadController (
-    sessionRegistry: SessionRegistry,
+    sessions: SessionRegistry,
     val uploads: IUploadService,
-) : BaseController(sessionRegistry) {
+) : BaseController(sessions) {
 
     override fun before(ctx: WsContext, payload: JsonElement): Boolean {
         return runBlocking {
-            if (!sessionRegistry.hasContext(ctx)) {
+            if (!sessions.hasContext(ctx)) {
                 ctx.sendPayload(ErrorResponse("must authenticate first"))
                 return@runBlocking false
             }

@@ -4,16 +4,18 @@ import fi.sobolev.uffn.data.*
 import java.util.UUID
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
+import org.ktorm.dsl.delete
 import org.ktorm.dsl.eq
 import org.ktorm.dsl.less
 import org.ktorm.entity.*
 
 
 interface IUploadService {
-    fun findOne(guid: UUID): Upload
-    fun exists(guid: UUID): Boolean
-    fun inFlight(owner: User, archive: Archive, identifier: String): Boolean
-    fun create(owner: User, archive: Archive, identifier: String): Upload
+    fun findOneFor(owner: User, guid: UUID): Upload?
+    fun getLogs(guid: UUID): List<UploadLog>
+    fun existsFor(owner: User, guid: UUID): Boolean
+    fun createFor(owner: User, archive: Archive, identifier: String): Pair<Upload?, String>
+    fun deleteFor(owner: User, guid: UUID): Pair<Boolean, String>
 }
 
 
@@ -21,30 +23,63 @@ class LocalUploadService (
     private val db: Database
 ) : IUploadService {
 
-    override fun findOne(guid: UUID): Upload {
-        return db.sequenceOf(Uploads).find { it.guid eq guid }!!
-    }
-
-    override fun exists(guid: UUID): Boolean {
-        return db.sequenceOf(Uploads).any { it.guid eq guid }
-    }
-
-    override fun inFlight(owner: User, archive: Archive, identifier: String): Boolean {
-        return db.sequenceOf(Uploads).any {
-            ((it.archive eq archive) and (it.identifier eq identifier)) and
-                    ((it.ownerId eq owner.id) and (it.status less UploadStatus.COMPLETED))
+    override fun findOneFor(owner: User, guid: UUID): Upload? {
+        return db.sequenceOf(Uploads).firstOrNull {
+            (it.guid eq guid) and (it.ownerId eq owner.id)
         }
     }
 
-    override fun create(owner: User, archive: Archive, identifier: String): Upload {
-        return Entity.create<Upload>().also {
+    override fun getLogs(guid: UUID): List<UploadLog> {
+        return db.sequenceOf(UploadLogs)
+            .filter { it.uploadGuid eq guid }
+            .sortedBy { it.time }
+            .toList()
+    }
+
+    override fun existsFor(owner: User, guid: UUID): Boolean {
+        return db.sequenceOf(Uploads).any {
+            (it.guid eq guid) and (it.ownerId eq owner.id)
+        }
+    }
+
+    override fun createFor(owner: User, archive: Archive, identifier: String): Pair<Upload?, String> = db.useTransaction {
+        val uploads = db.sequenceOf(Uploads)
+
+        val inFlight = uploads.any {
+            ((it.archive eq archive) and (it.identifier eq identifier)) and
+                ((it.ownerId eq owner.id) and (it.status less UploadStatus.COMPLETED))
+        }
+        if (inFlight) {
+            return Pair(null, "this story is already being processed")
+        }
+
+        val upload = Entity.create<Upload>().also {
             it.guid = UUID.randomUUID()
             it.owner = owner
             it.archive = archive
             it.identifier = identifier
             it.status = UploadStatus.PENDING
         }.also {
-            db.sequenceOf(Uploads).add(it)
+            uploads.add(it)
         }
+
+        val justCreated = uploads.find { it.guid eq upload.guid }
+            ?: return Pair(null, "internal entity creation failed")
+
+        return Pair(justCreated, "")
+    }
+
+    override fun deleteFor(owner: User, guid: UUID): Pair<Boolean, String> = db.useTransaction {
+        val uploads = db.sequenceOf(Uploads)
+        val upload = uploads.find { (it.guid eq guid ) and (it.ownerId eq owner.id) }
+            ?: return Pair(false, "upload with this uuid doesn't exist")
+
+        val status = upload.status
+        if (status == UploadStatus.FETCHING || status == UploadStatus.PARSING) {
+            return Pair(false, "upload can't be cancelled at this stage")
+        }
+
+        upload.delete()
+        return Pair(true, "")
     }
 }

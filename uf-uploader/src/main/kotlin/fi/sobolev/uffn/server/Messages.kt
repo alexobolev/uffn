@@ -87,58 +87,25 @@ class UploadCreateRequest (
 
 @Serializable
 class UploadCreatedResponse (
-    val created: MutableList<UploadGoodEntry> = mutableListOf(),
-    val failed: MutableList<UploadBadEntry> = mutableListOf()
+    val created: MutableList<UploadEntry> = mutableListOf(),
+    val failed: MutableList<UploadFailedEntry> = mutableListOf()
 ) : ServerPayload {
     override val code: String get() = "upload.created"
 
-    @Serializable
-    data class UploadGoodEntry (
-        @Serializable(with = UUIDSerializer::class)
-        val guid: UUID,
-        val url: String,
-        val origin: Origin,
-        val status: UploadStatus,
-        val title: String?,
-        @Serializable(with = InstantSerializer::class)
-        val timestamp: Instant
-    ) {
-        @Serializable
-        data class Origin (
-            val archive: Archive,
-            val ident: String
-        )
-    }
-
-    @Serializable
-    data class UploadBadEntry (
-        val url: String,
-        val reason: Reason
-    ) {
-        enum class Reason {
-            URL_PROCESSING, URL_UNRECOGNIZED, URL_OTHER
-        }
-    }
-
     fun addCreated(upload: Upload) {
-        val entry = UploadGoodEntry (
+        val entry = UploadEntry (
             guid = upload.guid,
             url = StoryUrl.make(upload.archive, upload.identifier),
-            origin = UploadGoodEntry.Origin(upload.archive, upload.identifier),
+            origin = UploadEntry.Origin(upload.archive, upload.identifier),
             status = upload.status,
             title = upload.title,
-            timestamp = upload.startedAt
+            timestamp = upload.startedAt,
+            logs = listOf()
         )
         created.add(entry)
     }
-
-    fun addUnrecognized(url: String) {
-        val entry = UploadBadEntry(url, UploadBadEntry.Reason.URL_UNRECOGNIZED)
-        failed.add(entry)
-    }
-
-    fun addProcessing(url: String) {
-        val entry = UploadBadEntry(url, UploadBadEntry.Reason.URL_PROCESSING)
+    fun addFailed(url: String, reason: String) {
+        val entry = UploadFailedEntry(url, reason)
         failed.add(entry)
     }
 }
@@ -155,10 +122,28 @@ class UploadRemoveRequest (
 
 @Serializable
 class UploadRemovedResponse (
-    @Serializable(with = UUIDSerializer::class)
-    val guid: UUID
+    val removed: MutableList<RemovedEntry> = mutableListOf(),
+    val failed: MutableList<ErrorEntry> = mutableListOf()
 ) : ServerPayload {
-    override val code: String get() = "upload.created"
+    override val code: String get() = "upload.removed"
+
+    @Serializable
+    data class RemovedEntry (
+        val guid: String,
+    )
+
+    @Serializable
+    data class ErrorEntry (
+        val guid: String,
+        val reason: String
+    )
+
+    fun addRemoved(guid: String) {
+        removed.add(RemovedEntry(guid))
+    }
+    fun addFailed(guid: String, why: String) {
+        failed.add(ErrorEntry(guid, reason = why))
+    }
 }
 
 
@@ -169,3 +154,66 @@ class UploadGetLogsRequest (
 ) : ClientPayload {
     override val code: String get() = "upload.get-logs"
 }
+
+@Serializable
+class UploadInfoResponse (
+    val uploads: MutableList<UploadEntry> = mutableListOf()
+) : ServerPayload {
+    override val code: String get() = "upload.info"
+
+    fun addUpload(upload: Upload, logs: List<UploadLog>) {
+        val entry = UploadEntry (
+            guid = upload.guid,
+            url = StoryUrl.make(upload.archive, upload.identifier),
+            origin = UploadEntry.Origin(upload.archive, upload.identifier),
+            status = upload.status,
+            title = upload.title,
+            timestamp = upload.startedAt,
+            logs = logs.map {
+                UploadEntry.LogEntry (
+                    time = it.time,
+                    level = it.level,
+                    message = it.message
+                )
+            }
+        )
+        uploads.add(entry)
+    }
+}
+
+
+// Common serializable structs.
+// ====================================================
+
+@Serializable
+data class UploadEntry (
+    @Serializable(with = UUIDSerializer::class)
+    val guid: UUID,
+    val url: String,
+    val origin: Origin,
+    val status: UploadStatus,
+    val title: String?,
+    @Serializable(with = InstantSerializer::class)
+    val timestamp: Instant,
+    val logs: List<LogEntry>
+) {
+    @Serializable
+    data class Origin (
+        val archive: Archive,
+        val ident: String
+    )
+
+    @Serializable
+    data class LogEntry (
+        @Serializable(with = InstantSerializer::class)
+        val time: Instant,
+        val level: LogLevel,
+        val message: String
+    )
+}
+
+@Serializable
+data class UploadFailedEntry (
+    val url: String,
+    val reason: String
+)
