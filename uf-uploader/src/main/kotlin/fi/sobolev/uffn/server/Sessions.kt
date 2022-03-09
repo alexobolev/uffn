@@ -22,7 +22,7 @@ interface SessionRegistry {
 
 class DefaultSessionRegistry : SessionRegistry {
     private val mutex = Mutex()
-    private val contexts = mutableMapOf<User, MutableSet<WsContext>>()
+    private val contexts = mutableMapOf<Int, MutableSet<WsContext>>()
     private val users = mutableMapOf<WsContext, User>()
 
     override suspend fun hasContext(ctx: WsContext) : Boolean {
@@ -33,9 +33,9 @@ class DefaultSessionRegistry : SessionRegistry {
 
     override suspend fun addContext(ctx: WsContext, user: User) {
         mutex.withLock {
-            users.put(ctx, user)
+            users[ctx] = user
             contexts
-                .getOrPut(user) { mutableSetOf() }
+                .getOrPut(user.id) { mutableSetOf() }
                 .add(ctx)
         }
     }
@@ -55,7 +55,7 @@ class DefaultSessionRegistry : SessionRegistry {
         mutex.withLock {
             users.entries.removeIf { it.value == user }
 
-            if (contexts.remove(user) == null) {
+            if (contexts.remove(user.id) == null) {
                 logger.warn { "registry is removing a non-registered user instance"}
             }
         }
@@ -63,7 +63,7 @@ class DefaultSessionRegistry : SessionRegistry {
 
     override suspend fun forUser(user: User, action: (WsContext) -> Unit) {
         mutex.withLock {
-            contexts[user]?.forEach {
+            contexts[user.id]?.forEach {
                 action(it)
             } ?: logger.warn { "registry is iterating on a non-registered user instance" }
         }

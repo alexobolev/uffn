@@ -1,6 +1,5 @@
-import fi.sobolev.uffn.Config
-import fi.sobolev.uffn.gDbConn
-import fi.sobolev.uffn.fetching.StoryUrl
+import fi.sobolev.uffn.*
+import fi.sobolev.uffn.fetching.*
 import fi.sobolev.uffn.server.*
 import fi.sobolev.uffn.services.*
 import io.javalin.Javalin
@@ -12,12 +11,17 @@ import mu.KotlinLogging
 import org.apache.commons.dbcp2.BasicDataSource
 import org.ktorm.database.Database
 import org.ktorm.support.postgresql.PostgreSqlDialect
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 private lateinit var sessionRegistry: SessionRegistry
 private lateinit var controllers: Map<String, BaseController>
 private lateinit var server: Javalin
+
+private val shouldShutdown =  AtomicBoolean(false)
 
 private val logger = KotlinLogging.logger {}
 private val requestPattern = """(\w+)\.(.+)""".toRegex()
@@ -66,6 +70,12 @@ fun handleUploadCreate(ctrl: UploadController, ctx: WsContext, req: UploadCreate
 
         response.addCreated(newUpload)
     }
+
+    // debug
+    response.created.forEach { entry ->
+        logger.warn { "created upload with uuid = ${entry.guid}" }
+    }
+    // end debug
 
     ctrl.sendTo(user, payload = response)
 }
@@ -117,21 +127,57 @@ fun handleUploadGetLogs(ctrl: UploadController, ctx: WsContext, req: UploadGetLo
 }
 
 
+fun notifyUploadChange(service: IUploadService, uuid: UUID) {
+    val upload = service.findOne(uuid)
+    if (upload == null) {
+        logger.warn { "UNQ task contained an UUID which didn't match any upload: $uuid" }
+        return
+    }
+
+    val notification = UploadInfoResponse()
+    notification.addUpload(upload, logs = service.getLogs(uuid))
+
+    runBlocking {
+        sessionRegistry.forUser(upload.owner) {
+            it.sendPayload(notification)
+        }
+    }
+}
+
+
 fun main(args: Array<String>) {
     // fixes a null pointer exception in json serialization
     System.setProperty("kotlinx.serialization.json.pool.size", (1024 * 1024).toString())
 
-    gDbConn = makeDbConnection(Config.PostgresConfig (
-        host = "localhost",
-        port = 25001,
-        user = "argon",
-        pass = "qwerty",
-        name = "dev_uffn"
-    ))
+    gAppConfig = Config (
+        database = Config.PostgresConfig (
+            host = "localhost",
+            port = 25001,
+            user = "argon",
+            pass = "qwerty",
+            name = "dev_uffn"
+        ),
+        redis = Config.RedisConfig (
+            host = "localhost",
+            port = 25000,
+            interval = 5,
+            maxTotal = 16
+        ),
+        websockets = Config.WsConfig (
+            port = 7070
+        )
+    )
 
+    gDbConn = makeDbConnection(gAppConfig.database)
+    gRedisConn = makeRedisConnection(gAppConfig.redis)
     sessionRegistry = DefaultSessionRegistry()
     controllers = makeControllers()
-    server = makeJavalinApp()
+
+    // update notification queue listener has a new thread
+    startRedisListener(gAppConfig.redis)
+
+    // websocket server blocks the main thread
+    startJavalinApp(gAppConfig.websockets)
 }
 
 fun makeDbConnection(config: Config.PostgresConfig): Database {
@@ -145,6 +191,13 @@ fun makeDbConnection(config: Config.PostgresConfig): Database {
     }).let { dataSource ->
         return Database.connect(dataSource, PostgreSqlDialect())
     }
+}
+
+fun makeRedisConnection(config: Config.RedisConfig): JedisPool {
+    val poolConfig = JedisPoolConfig().apply {
+        this.maxTotal = config.maxTotal
+    }
+    return JedisPool(poolConfig, config.host, config.port)
 }
 
 fun makeControllers(): Map<String, BaseController> {
@@ -175,8 +228,59 @@ fun makeControllers(): Map<String, BaseController> {
     )
 }
 
-fun makeJavalinApp(): Javalin {
-    val app = Javalin.create().start(7070)
+fun startRedisListener(config: Config.RedisConfig) {
+    val pollThread = Thread {
+        gRedisConn.use { pool ->
+            val uploadService = LocalUploadService(gDbConn)
+
+            val kInputQueue = "uffn-update"
+            val kBlockInterval = config.interval.toString()
+
+            logger.info { "starting polling the update notification queue (UNQ)" }
+
+            pool.resource.use { conn ->
+                while (!shouldShutdown.get()) {
+                    val item = conn.brpop(kInputQueue, kBlockInterval)
+                    if (item != null) {
+                        val (queue, task) = item
+                        logger.info { "UNQ loop - retrieved $task from $queue" }
+
+                        var uuid: UUID
+                        try {
+                            uuid = UUID.fromString(task.trim())
+                        } catch (ex: IllegalArgumentException) {
+                            logger.warn { "failed to match UNQ task (should be a UUID, was $task)" }
+                            continue
+                        }
+
+                        notifyUploadChange(uploadService, uuid)
+                    }
+                }
+            }
+
+            logger.info { "finished polling UNQ" }
+        }
+    }
+
+    // register shutdown logic
+    Runtime.getRuntime().addShutdownHook(object : Thread() {
+        override fun run() {
+            try {
+                logger.info { "UNQ termination flag set, should shutdown in about ${config.interval} seconds" }
+                shouldShutdown.set(true)
+                pollThread.join()
+            } catch (ex: InterruptedException) {
+                logger.error(ex) { "exception thrown during shutdown - $ex" }
+            }
+        }
+    })
+
+    pollThread.start()
+}
+
+fun startJavalinApp(config: Config.WsConfig) {
+    val app = Javalin.create().start(config.port)
+
     app.ws("/upload") { ws ->
         ws.onConnect { ctx ->
             logger.debug { "new connection with ${ctx.session.remoteAddress}" }
@@ -220,5 +324,4 @@ fun makeJavalinApp(): Javalin {
             }
         }
     }
-    return app
 }

@@ -2,10 +2,10 @@ package fi.sobolev.uffn.origins.ffn
 
 import fi.sobolev.uffn.fetching.*
 import fi.sobolev.uffn.origins.ffn.pages.*
-import java.time.Duration
-import org.openqa.selenium.By
-import org.openqa.selenium.support.ui.*
+import mu.KotlinLogging
 
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Autonomous class which retrieves & parses an entire ff.net story by its ID.
@@ -15,7 +15,7 @@ class FFNParser (
     private val browser: Browser,
     private val baseUrl: String = "https://www.fanfiction.net"
 ) {
-    private val requestTimeout: Long = 10  // (seconds)
+    private val requestTimeout: Long = 15  // (seconds)
     private val requestDelay: Long = 2  // (seconds)
 
     fun parse(): FFNStory {
@@ -37,26 +37,21 @@ class FFNParser (
                         chapterCount = it.titles.size
                     }
                 }
+
+                logger.info { "story: ${story.title} by ${story.author} with ${story.chapterCount} chapter(s)"}
             }
 
             story.chapters[chapterIndex].contents = page.getChapterContents()
             chapterIndex += 1
+
+            logger.info { "parsed ffn chapter $chapterIndex for story $storyId" }
+
+            Thread.sleep(requestDelay * 1000)
         } while (chapterIndex < chapterCount)
 
         return story
     }
 
-    private fun getHtml(url: String): String = when (browser) {
-        is SeleniumBrowser -> {
-            browser.getContents(url) { driver ->
-                val timeout = Duration.ofSeconds(requestTimeout)
-                WebDriverWait(driver, timeout).also { wait ->
-                    wait.until(ExpectedConditions.presenceOfElementLocated(By.id("review_name_value")))
-                }
-            }
-        }
-        else -> {
-            browser.getContents(url)
-        }
-    }
+    private fun getHtml(url: String): String
+        = browser.getContents(url)
 }

@@ -26,9 +26,7 @@ data class Config (
     )
 
     data class WsConfig (
-        val port: Int,
-        val ping: Long = 10,
-        val timeout: Long = 10
+        val port: Int
     )
 }
 
@@ -36,4 +34,4 @@ data class Config (
  * Global app-wide configuration instance.
  * Set during app initialization.
  */
-lateinit var AppConfig: Config
+lateinit var gAppConfig: Config

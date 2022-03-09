@@ -4,13 +4,13 @@ import fi.sobolev.uffn.data.*
 import java.util.UUID
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
-import org.ktorm.dsl.delete
 import org.ktorm.dsl.eq
 import org.ktorm.dsl.less
 import org.ktorm.entity.*
 
 
 interface IUploadService {
+    fun findOne(guid: UUID): Upload?
     fun findOneFor(owner: User, guid: UUID): Upload?
     fun getLogs(guid: UUID): List<UploadLog>
     fun existsFor(owner: User, guid: UUID): Boolean
@@ -22,6 +22,9 @@ interface IUploadService {
 class LocalUploadService (
     private val db: Database
 ) : IUploadService {
+    override fun findOne(guid: UUID): Upload? {
+        return db.sequenceOf(Uploads).firstOrNull { it.guid eq guid }
+    }
 
     override fun findOneFor(owner: User, guid: UUID): Upload? {
         return db.sequenceOf(Uploads).firstOrNull {
