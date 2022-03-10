@@ -1,7 +1,7 @@
 <?php
 namespace App\Repository;
 
-use App\Entity\Chapter;
+use App\Entity\{Chapter, Version};
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -39,5 +39,18 @@ class ChapterRepository extends ServiceEntityRepository {
         if ($flush) {
             $this->_em->flush();
         }
+    }
+
+    /**
+     * Get all chapters, sorted in sequence order,
+     * which belong to a version instance.
+     */
+    public function findAllSorted(Version $version) {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.version = :ver')
+            ->setParameter('ver', $version)
+            ->orderBy('c.sequenceNum', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -12,10 +12,8 @@
 {% block jumboExtra %}{% endblock %}
 
 {% block storyChapterNav %}
-  <a href="{{ path('story_version_fulltext', {
-    storyId: story.info.story_id,
-    versionId: story.info.version_id,
-  }) }}" type="button" class="btn btn-secondary btn-sm">Full text</a>
+  <a href="{{ path('version_fulltext', { id: story.info.version_id, }) }}"
+     type="button" class="btn btn-secondary btn-sm">Full text</a>
 {% endblock %}
 
 {% block mainContent %}
@@ -24,9 +22,8 @@
   <ol class="ps-4">
     {% for chapter in chapters %}
       <li>
-        {% set link = path('story_version_chapter', {
-          storyId: story.info.story_id,
-          versionId: story.info.version_id,
+        {% set link = path('version_chapter', {
+          id: story.info.version_id,
           chapterNum: chapter.sequenceNum + 1
         }) %}
 

@@ -17,14 +17,7 @@
     <span id="story-rating" class="badge bg-dark">{{ story.meta.rating ?? "N/A" }}</span>
     <span class="ms-4 uf-story-meta">
     Chapters: <span>{{ story.meta.chapter_count }}</span>
-    Words: <span>{{ story.meta.word_count }}</span>
-
-    {% if story.meta.is_complete %}
-      Completed:
-    {% else %}
-      Updated:
-    {% endif %}
-    <span>{{ story.meta.updated_on }}</span>
+    {% if story.meta.is_complete %}Completed{% endif %}
   </span>
   </div>
 {% endblock %}
@@ -80,10 +73,8 @@
 
       {% block storyChapterNav %}
         <div class="btn-group me-1">
-          <a href="{{ path('story_version_toc', {
-            storyId: story.info.story_id,
-            versionId: story.info.version_id,
-          }) }}" type="button" class="btn btn-secondary btn-sm">Chapters</a>
+          <a href="{{ path('version_toc', { id: story.info.version_id, }) }}"
+             type="button" class="btn btn-secondary btn-sm">Chapters</a>
           <button type="button" class="btn btn-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
             <span class="visually-hidden">Toggle Dropdown</span>
           </button>
@@ -91,9 +82,8 @@
 
             {% if user_actions.nav.prev_index %}
               <li><a class="dropdown-item small"
-                     href="{{ path('story_version_chapter', {
-                       storyId: story.info.story_id,
-                       versionId: story.info.version_id,
+                     href="{{ path('version_chapter', {
+                       id: story.info.version_id,
                        chapterNum: user_actions.nav.prev_index
                      }) }}">« Prev chapter</a></li>
             {% else %}
@@ -102,9 +92,8 @@
 
             {% if user_actions.nav.next_index %}
               <li><a class="dropdown-item small"
-                     href="{{ path('story_version_chapter', {
-                       storyId: story.info.story_id,
-                       versionId: story.info.version_id,
+                     href="{{ path('version_chapter', {
+                       id: story.info.version_id,
                        chapterNum: user_actions.nav.next_index
                      }) }}">Next chapter »</a></li>
             {% else %}
@@ -112,14 +101,8 @@
             {% endif %}
 
             <li><hr class="dropdown-divider small"></li>
-            <li><a class="dropdown-item small" href="{{ path('story_version_toc', {
-                storyId: story.info.story_id,
-                versionId: story.info.version_id,
-              }) }}">Chapter index</a></li>
-            <li><a class="dropdown-item small" href="{{ path('story_version_fulltext', {
-                storyId: story.info.story_id,
-                versionId: story.info.version_id,
-              }) }}">Full text</a></li>
+            <li><a class="dropdown-item small" href="{{ path('version_toc', { id: story.info.version_id}) }}">Chapter index</a></li>
+            <li><a class="dropdown-item small" href="{{ path('version_fulltext', { id: story.info.version_id }) }}">Full text</a></li>
           </ul>
         </div>
       {% endblock %}
@@ -190,9 +173,8 @@
         {% if bottom_nav.prev_index %}
           <a class="me-1 btn btn-sm"
              style="border: 1px solid #ced4da;"
-             href="{{ path('story_version_chapter', {
-               storyId: story.info.story_id,
-               versionId: story.info.version_id,
+             href="{{ path('version_chapter', {
+               id: story.info.version_id,
                chapterNum: bottom_nav.prev_index
              }) }}">&laquo; Prev. chapter</a>
         {% else %}
@@ -204,9 +186,8 @@
 
         {% if bottom_nav.next_index %}
           <a class="btn btn-sm btn-primary"
-             href="{{ path('story_version_chapter', {
-               storyId: story.info.story_id,
-               versionId: story.info.version_id,
+             href="{{ path('version_chapter', {
+               id: story.info.version_id,
                chapterNum: bottom_nav.next_index
              }) }}">Next chapter &raquo;</a>
         {% else %}

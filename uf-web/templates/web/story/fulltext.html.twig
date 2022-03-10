@@ -4,17 +4,12 @@
 
 {% block breadcrumbs %}
   {{ parent() }}
-  &rarr; <a href="{{ path('story_version_fulltext', {
-      storyId: story.info.story_id,
-      versionId: story.info.version_id,
-    }) }}">full text</a>
+  &rarr; <a href="{{ path('version_fulltext', { id: story.info.version_id }) }}">full text</a>
 {% endblock %}
 
 {% block storyChapterNav %}
-  <a href="{{ path('story_version_toc', {
-    storyId: story.info.story_id,
-    versionId: story.info.version_id,
-  }) }}" type="button" class="btn btn-secondary btn-sm">Chapter index</a>
+  <a href="{{ path('version_toc', { id: story.info.version_id, }) }}"
+     type="button" class="btn btn-secondary btn-sm">Chapter index</a>
 {% endblock %}
 
 {% block storyBottomNav %}
