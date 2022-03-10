@@ -16,7 +16,6 @@ enum Rating: string {
 enum UploadStatus: string {
     case Pending = 'PENDING';
     case Fetching = 'FETCHING';
-    case Parsing = 'PARSING';
     case Completed = 'COMPLETED';
     case Errored = 'ERRORED';
     case Cancelled = 'CANCELLED';

@@ -5,17 +5,11 @@ import fi.sobolev.uffn.common.server.*
 import fi.sobolev.uffn.common.services.*
 
 import io.javalin.Javalin
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import org.apache.commons.dbcp2.BasicDataSource
-import org.ktorm.database.Database
-import org.ktorm.support.postgresql.PostgreSqlDialect
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
 
 
 private lateinit var sessionRegistry: SessionRegistry
@@ -62,26 +56,6 @@ fun main(args: Array<String>) {
     startJavalinApp(gAppConfig.websockets)
 }
 
-fun makeDbConnection(config: Config.PostgresConfig): Database {
-    (object : BasicDataSource() {
-        init {
-            driverClassName = "org.postgresql.Driver"
-            url = "jdbc:postgresql://${config.host}:${config.port}/${config.name}"
-            username = config.user
-            password = config.pass
-        }
-    }).let { dataSource ->
-        return Database.connect(dataSource, PostgreSqlDialect())
-    }
-}
-
-fun makeRedisConnection(config: Config.RedisConfig): JedisPool {
-    val poolConfig = JedisPoolConfig().apply {
-        this.maxTotal = config.maxTotal
-    }
-    return JedisPool(poolConfig, config.host, config.port)
-}
-
 fun makeControllers(): Map<String, BaseController> {
     val uploadService = LocalUploadService(gDbConn, gRedisConn)
     val userService = LocalUserService(gDbConn)
@@ -123,34 +97,31 @@ fun startRedisListener(config: Config.RedisConfig) {
 
             pool.resource.use { conn ->
                 while (!shouldShutdown.get()) {
-                    val item = conn.brpop(kBlockInterval, kInputQueue)
-                    if (item != null) {
-                        val queue = item.key
-                        val task = item.element
+                    val item = conn.blpop(kBlockInterval, kInputQueue) ?: continue
 
-                        logger.info { "UNQ loop - retrieved $task from $queue" }
+                    val queue = item.key
+                    val task = item.element
 
-                        var uuid: UUID
-                        try {
-                            uuid = UUID.fromString(task.trim())
-                        } catch (ex: IllegalArgumentException) {
-                            logger.warn { "failed to match UNQ task (should be a UUID, was $task)" }
-                            continue
-                        }
+                    logger.info { "UNQ loop - retrieved $task from $queue" }
 
-                        val upload = uploadService.findOne(uuid)
-                        if (upload == null) {
-                            logger.warn { "UNQ task contained an UUID which didn't match any upload: $uuid" }
-                            continue
-                        }
+                    val uuid = task.trim().tryParseUuid()
+                    if (uuid == null) {
+                        logger.warn { "failed to match UNQ task (should be a UUID, was $task)" }
+                        continue
+                    }
 
-                        val notification = UploadInfoResponse()
-                        notification.addUpload(upload, logs = uploadService.getLogs(uuid))
+                    val upload = uploadService.findOne(uuid)
+                    if (upload == null) {
+                        logger.warn { "UNQ task contained an UUID which didn't match any upload: $uuid" }
+                        continue
+                    }
 
-                        runBlocking {
-                            sessionRegistry.forUser(upload.owner) {
-                                it.sendPayload(notification)
-                            }
+                    val notification = UploadInfoResponse()
+                    notification.addUpload(upload, logs = uploadService.getLogs(uuid))
+
+                    runBlocking {
+                        sessionRegistry.forUser(upload.owner) {
+                            it.sendPayload(notification)
                         }
                     }
                 }

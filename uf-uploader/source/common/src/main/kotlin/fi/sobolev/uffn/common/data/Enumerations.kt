@@ -10,7 +10,7 @@ enum class Rating {
 }
 
 enum class UploadStatus {
-    PENDING, FETCHING, PARSING, COMPLETED, ERRORED, CANCELLED;
+    PENDING, FETCHING, COMPLETED, ERRORED, CANCELLED;
 }
 
 enum class UploadError {

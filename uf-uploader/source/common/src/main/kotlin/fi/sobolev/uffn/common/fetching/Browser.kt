@@ -22,13 +22,7 @@ class StaticBrowser : Browser {
              it.addRequestProperty("User-Agent", "uffn/0.1.0 self-hosted fanfic aggregation bot.")
         }
 
-        // @TODO REMOVE BELOW
-        conn.connect()
-        println("Capacity = ${conn.contentLength}")
-        // @TODO REMOVE ABOVE
-
         val responseContent = StringBuilder()
-
         conn.inputStream
             .let { stream -> InputStreamReader(stream) }
             .let { reader -> BufferedReader(reader) }

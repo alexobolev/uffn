@@ -84,7 +84,7 @@ class LocalUploadService (
             ?: return Pair(false, "upload with this uuid doesn't exist")
 
         val status = upload.status
-        if (status == UploadStatus.FETCHING || status == UploadStatus.PARSING) {
+        if (status == UploadStatus.FETCHING) {
             return Pair(false, "upload can't be cancelled at this stage")
         }
 
