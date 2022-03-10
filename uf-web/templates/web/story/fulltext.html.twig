@@ -1,0 +1,21 @@
+{% extends 'web/story/chapters.html.twig' %}
+
+{% block title %}{{ story.info.title }} - uffn{% endblock %}
+
+{% block breadcrumbs %}
+  {{ parent() }}
+  &rarr; <a href="{{ path('story_version_fulltext', {
+      storyId: story.info.story_id,
+      versionId: story.info.version_id,
+    }) }}">full text</a>
+{% endblock %}
+
+{% block storyChapterNav %}
+  <a href="{{ path('story_version_toc', {
+    storyId: story.info.story_id,
+    versionId: story.info.version_id,
+  }) }}" type="button" class="btn btn-secondary btn-sm">Chapter index</a>
+{% endblock %}
+
+{% block storyBottomNav %}
+{% endblock %}

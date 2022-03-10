@@ -1,0 +1,43 @@
+{% extends 'web/story/chapters.html.twig' %}
+
+{% block title %}{{ story.info.title }} - Table of contents - uffn{% endblock %}
+
+{% block breadcrumbs %}
+  {{ parent() }}
+  &rarr; <a href="#">Table of contents</a>
+{% endblock %}
+
+{% block jumboMeta %}{% endblock %}
+{% block jumboDetails %}{% endblock %}
+{% block jumboExtra %}{% endblock %}
+
+{% block storyChapterNav %}
+  <a href="{{ path('story_version_fulltext', {
+    storyId: story.info.story_id,
+    versionId: story.info.version_id,
+  }) }}" type="button" class="btn btn-secondary btn-sm">Full text</a>
+{% endblock %}
+
+{% block mainContent %}
+
+  <h4 class="mb-4 pt-4">All chapters:</h4>
+  <ol class="ps-4">
+    {% for chapter in chapters %}
+      <li>
+        {% set link = path('story_version_chapter', {
+          storyId: story.info.story_id,
+          versionId: story.info.version_id,
+          chapterNum: chapter.sequenceNum + 1
+        }) %}
+
+        <a href="{{ link }}" class="ps-2 text-decoration-none">
+          {% if chapter.title %}
+            {{ chapter.title}}
+          {% else %}
+            Chapter {{ chapter.sequenceNum + 1 }}
+          {% endif %}</a>
+      </li>
+    {% endfor %}
+  </ol>
+
+{% endblock %}
