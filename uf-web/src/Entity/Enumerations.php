@@ -1,18 +1,6 @@
 <?php
 namespace App\Entity;
 
-enum Archive: string {
-    case AO3 = 'AO3';
-    case FFN = 'FFN';
-}
-
-enum Rating: string {
-    case K = 'K';
-    case T = 'T';
-    case M = 'M';
-    case E = 'E';
-}
-
 enum UploadStatus: string {
     case Pending = 'PENDING';
     case Fetching = 'FETCHING';

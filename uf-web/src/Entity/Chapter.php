@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity(repositoryClass: ChapterRepository::class)]
+#[ORM\Table(name: 'story_version_chapters')]
 class Chapter
 {
     #[ORM\Id]

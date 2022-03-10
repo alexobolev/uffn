@@ -1,0 +1,75 @@
+{% extends 'web/base.html.twig' %}
+
+{% block body %}
+
+  <!-- Topbar -->
+  <nav class="uf-topbar">
+    <div class="container-md d-flex justify-content-between">
+      <div>
+        <!-- Always show logo -->
+        <a href="/" class="uf-site-logo">uffn</a>
+        <!-- Show breadcrumbs only on sm+ -->
+        <span class="d-none d-sm-inline-block">
+          {% block breadcrumbs %}{% endblock %}
+        </span>
+      </div>
+      <a href="#">(username here)</a>
+    </div>
+  </nav>
+
+  <!-- Jumbo -->
+  <div class="uf-jumbo">
+    <div class="container-md">
+      <div class="row">
+        <h1 class="uf-jumbo-title">{% block jumboTitle %}{% endblock %}</h1>
+        <p class="uf-jumbo-lead">{% block jumboLead %}{% endblock %}</p>
+        <div class="uf-jumbo-meta">{% block jumboMeta %}{% endblock %}</div>
+        <div class="uf-jumbo-details">{% block jumboDetails %}{% endblock %}</div>
+        <div class="uf-jumbo-extra">{% block jumboExtra %}{% endblock %}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User actions -->
+  <div class="uf-user-actions">
+    <div class="container-md">
+      {% block userActions %}{% endblock %}
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="uf-main">
+    <div class="container-md">
+      <div class="col">
+        {% block mainContent %}{% endblock %}
+      </div>
+    </div>
+  </main>
+
+
+
+  <!-- Global footer. -->
+  <footer class="uf-globalfooter">
+    <div class="container-md">
+      <div class="row">
+        <div class="col col-12 col-sm-4">
+          <h5>Personal</h5>
+          <ul class="uf-globalfooter-links">
+            <li><a href="#">My lists</a></li>
+            <li><a href="#">My uploads</a></li>
+            <li><a href="#">My history</a></li>
+            <li><a href="#">My settings</a></li>
+          </ul>
+        </div>
+        <div class="col col-12 col-sm-8">
+          <h5>Archive</h5>
+          <div class="uf-globalfooter-text">
+            <p>All works uploaded to this website were retrieved and processed automatically for the purposes of aggregation and organization; owners of this website do not claim ownership of the works archived.</p>
+            <p>Made with <strong>uffn (version)</strong>, a piece of free open source software distributed under the MIT license.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+{% endblock %}

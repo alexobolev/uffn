@@ -1,0 +1,206 @@
+{% extends 'web/base_auth.html.twig' %}
+
+{% block title %}{{ story.info.title }} - uffn{% endblock %}
+
+{% block breadcrumbs %}
+  &rarr; <a href="#">{{ story.info.title }}</a>
+{% endblock %}
+
+{% block jumboTitle %}
+  {{ story.info.title }}
+{% endblock %}
+{% block jumboLead %}
+  {{ story.info.authors|join(', ') }}
+{% endblock %}
+{% block jumboMeta %}
+  <span id="story-rating" class="badge bg-dark">{{ story.meta.rating ?? "N/A" }}</span>
+  <span class="ms-4 uf-story-meta">
+    Chapters: <span>{{ story.meta.chapter_count }}</span>
+    Words: <span>{{ story.meta.word_count }}</span>
+
+    {% if story.meta.is_complete %}
+      Completed:
+    {% else %}
+      Updated:
+    {% endif %}
+    <span>{{ story.meta.updated_on }}</span>
+  </span>
+{% endblock %}
+{% block jumboDetails %}
+  <div class="row">
+    <div class="col col-12 col-lg-10">
+      {% if story.custom_summary %}
+        {{ story.custom_summary|raw }}
+      {% else %}
+        {{ story.original_summary|raw }}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block jumboExtra %}
+  {% if story.custom_summary %}
+    <div class="mt-4 mb-1">
+      <div class="accordion" id="extraAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="extraAccordion-heading1">
+            <button type="button" class="accordion-button collapsed"
+                    data-bs-toggle="collapse" data-bs-target="#extraAccordion-collapse1"
+                    aria-expanded="false" aria-controls="extraAccordion-collapse1">
+              Original summary
+            </button>
+          </h2>
+          <div class="accordion-collapse collapse collapsed" id="extraAccordion-collapse1"
+               data-bs-parent="#extraAccordion" aria-labelledby="extraAccordion-heading1">
+            <div class="accordion-body">
+              <div class="col col-12 col-lg-10 fst-italic">
+                {{ story.original_summary|raw }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block userActions %}
+  <div class="row">
+    <div class="col-md-8 font-monospace small" style="color: #666;">
+      Retrieved: <strong>{{ user_actions.info.retrieved_on }}</strong> <br>
+      Origin:
+        <strong><a class="text-decoration-none" href="{{ user_actions.info.link }}" target="_blank">
+          <span class="d-inline d-sm-none">{{ user_actions.info.mobile_link_name }}</span>
+          <span class="d-none d-sm-inline">{{ user_actions.info.link }}</span>
+        </a></strong>
+    </div>
+    <div class="col-md-4 mt-3 mt-md-0 text-md-end d-flex justify-content-end align-items-start">
+
+      <div class="btn-group me-1">
+        <a href="#" type="button" class="btn btn-secondary btn-sm">Chapters</a>
+        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-end text-md-end">
+
+          {% if user_actions.nav.prev_index %}
+            <li><a class="dropdown-item small"
+                   href="{{ path('story_version_chapter', {
+                     storyId: story.info.story_id,
+                     versionId: story.info.version_id,
+                     chapterNum: user_actions.nav.prev_index
+                   }) }}">« Prev chapter</a></li>
+          {% else %}
+            <li><a class="dropdown-item small disabled" href="#">« Prev chapter</a></li>
+          {% endif %}
+
+          {% if user_actions.nav.next_index %}
+            <li><a class="dropdown-item small"
+                   href="{{ path('story_version_chapter', {
+                     storyId: story.info.story_id,
+                     versionId: story.info.version_id,
+                     chapterNum: user_actions.nav.next_index
+                   }) }}">Next chapter »</a></li>
+          {% else %}
+            <li><a class="dropdown-item small disabled" href="#">Next chapter »</a></li>
+          {% endif %}
+
+          <li><hr class="dropdown-divider small"></li>
+          <li><a class="dropdown-item small" href="#">Chapter index</a></li>
+          <li><a class="dropdown-item small" href="#">Full text</a></li>
+        </ul>
+      </div>
+
+      <div class="btn-group ms-2">
+        <button type="button" class="btn btn-warning btn-sm">Add to list</button>
+        <button type="button" class="btn btn-warning btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-end text-md-end">
+          <li><a class="dropdown-item small" href="#">Other versions</a></li>
+          <li><a class="dropdown-item small" href="#">Edit story</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}
+
+{% block mainContent %}
+
+  <!-- Chapter blocks -->
+  <div class="mt-5 uf-container-chapter" style="margin-left: auto; margin-right: auto;">
+    {% for chapter in chapters %}
+      <section id="chapter-{{ loop.index }}">
+        <!-- Chapter title -->
+        <h3 class="text-center mb-5">
+          <a class="uf-chapter-anchor" href="#">&sect;</a>
+          Chapter {{ chapter.sequenceNum + 1 }}
+          {% if chapter.title %} &ndash; {{ chapter.title }} {% endif %}
+        </h3>
+
+        <!-- Chapter summary and pre-notes -->
+        {% if chapter.summary %}
+          <div class="uf-chapter-note summary">
+            <h5 class="text-center">Summary</h5>
+            {{ chapter.summary|raw }}
+          </div>
+        {% endif %}
+        {% if chapter.notesPre %}
+          <div class="uf-chapter-note an">
+            <h5 class="text-center">Author's note</h5>
+            {{ chapter.notesPre|raw }}
+          </div>
+        {% endif %}
+
+        <!-- Contents -->
+        <div class="uf-chapter-contents">
+          {{ chapter.contents|raw }}
+        </div>
+
+        <!-- Chapter post-notes -->
+        {% if chapter.notesPost %}
+          <div class="uf-chapter-note an mt-5">
+            <h5 class="text-center">Author's note (post)</h5>
+            {{ chapter.notesPost|raw }}
+          </div>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+
+  <!-- Bottom navigation -->
+  <div class="mt-5 uf-container-chapter" style="margin-left: auto; margin-right: auto;">
+    <div class="d-flex justify-content-between">
+
+      {% if bottom_nav.prev_index %}
+        <a class="me-1 btn btn-sm"
+           style="border: 1px solid #ced4da;"
+           href="{{ path('story_version_chapter', {
+             storyId: story.info.story_id,
+             versionId: story.info.version_id,
+             chapterNum: bottom_nav.prev_index
+           }) }}">&laquo; Prev. chapter</a>
+      {% else %}
+        <a class="me-1 btn btn-sm disabled"
+           style="border: 1px solid #ced4da;"
+           href="#">&laquo; Prev. chapter</a>
+      {% endif %}
+
+
+      {% if bottom_nav.next_index %}
+        <a class="btn btn-sm btn-primary"
+           href="{{ path('story_version_chapter', {
+             storyId: story.info.story_id,
+             versionId: story.info.version_id,
+             chapterNum: bottom_nav.next_index
+           }) }}">Next chapter &raquo;</a>
+      {% else %}
+        <a class="btn btn-sm btn-primary disabled"
+           href="#">Next chapter &raquo;</a>
+      {% endif %}
+
+    </div>
+  </div>
+
+{% endblock %}

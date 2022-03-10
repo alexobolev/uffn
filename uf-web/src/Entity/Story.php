@@ -29,10 +29,9 @@ class Story
     #[ORM\Column(
         name: 'origin_archive',
         type: 'string',
-        length: 255,
         enumType: Archive::class
     )]
-    private ?string $originArchive;
+    private ?Archive $originArchive;
 
     #[ORM\Column(
         name: 'is_public',
@@ -89,11 +88,11 @@ class Story
         return $this;
     }
 
-    public function getOriginArchive(): ?string {
+    public function getOriginArchive(): ?Archive {
         return $this->originArchive;
     }
 
-    public function setOriginArchive(string $originArchive): self {
+    public function setOriginArchive(Archive $originArchive): self {
         $this->originArchive = $originArchive;
         return $this;
     }

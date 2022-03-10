@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}uffn{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ asset('dist/main.css') }}"/>
+  </head>
+  <body>
+    <noscript>
+      <div class="alert alert-danger mb-0 rounded-0 small" role="alert">
+        <div class="container-md">
+          <p class="mb-0"><strong>This website requires JavaScript</strong> - uploading module will not work; profile page and parts of chapter navigation will be inaccessible.</p>
+        </div>
+      </div>
+    </noscript>
+    {% block body %}{% endblock %}
+    <script src="{{ asset('dist/bundle.js') }}"></script>
+  </body>
+</html>
