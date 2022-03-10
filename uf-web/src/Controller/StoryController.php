@@ -3,7 +3,7 @@ namespace App\Controller;
 
 
 use App\Repository\ChapterRepository;
-use App\Entity\{Archive, Author, Chapter, Story, Version};
+use App\Entity\{Archive, Author, Chapter, Rating, Story, Version};
 use Doctrine\Persistence\{ManagerRegistry, ObjectManager};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,6 +15,19 @@ class StoryController extends AbstractController {
 
     public function __construct(ManagerRegistry $doctrine) {
         $this->doctrine = $doctrine;
+    }
+
+    private static function ratingToClass(?Rating $rating): string {
+        if ($rating === null) {
+            return '';
+        }
+
+        return match ($rating) {
+            Rating::K => 'kids',
+            Rating::T => 'teens',
+            Rating::M => 'mature',
+            Rating::E => 'explicit'
+        };
     }
 
     private function getVersionStoryAndChapters(int $versionId) {
@@ -47,6 +60,11 @@ class StoryController extends AbstractController {
         ];
     }
     private function makeCommonPageData(Story $story, Version $version, $chapters) {
+        $rating = $story->getRating() ?? $version->getRating();
+        if (empty($rating)) {
+            $rating = null;
+        }
+
         return [
             'story' => [
                 'info' => [
@@ -59,25 +77,38 @@ class StoryController extends AbstractController {
                     'identifier' => $story->getOriginIdentifier()
                 ],
                 'meta' => [
-                    'rating' => $story->getRating() ?? $version->getRating(),
+                    'rating' => $rating?->value,
+                    'rating_class' => $rating ? self::ratingToClass($rating) : '',
                     'chapter_count' => count($chapters),
                     'is_complete' => $version->getIsCompleted(),
                 ],
                 'custom_summary' => $story->getSummary(),
-                'original_summary' => $version->getSummary()
-            ],
-            'user_actions' => [
-                'info' => [
+                'original_summary' => $version->getSummary(),
+                'extra' => [
                     'retrieved_on' => $version->getArchivedAt()->format('d/m/Y H:i:s'),
                     'link' => sprintf('https://archiveofourown.org/works/%d', $story->getOriginIdentifier()),
                     'mobile_link_name' => sprintf('%s://%d',
                         $story->getOriginArchive()->value,
                         $story->getOriginIdentifier())
                 ]
-            ]
+            ],
+            'user_actions' => [ ]
         ];
     }
 
+    /**
+     * Redirect version to its first chapter.
+     *
+     * @param int $id           Version instance index.
+     */
+    #[Route(
+        '/versions/{id}',
+        name: 'version',
+        requirements: ['id' => '\d+']
+    )]
+    public function version(int $id): Response {
+        return $this->redirectToRoute('version_chapter', ['id' => $id, 'chapterNum' => 1]);
+    }
 
     /**
      * Display a single chapter with story/version info.
@@ -91,7 +122,7 @@ class StoryController extends AbstractController {
         name: 'version_chapter',
         requirements: ['id' => '\d+', 'chapterNum' => '\d+']
     )]
-    public function storyVersionChapter(int $id, int $chapterNum): Response {
+    public function versionChapter(int $id, int $chapterNum): Response {
         ['version' => $version, 'story' => $story, 'chapters' => $chapters]
             = $this->getVersionStoryAndChapters(versionId: $id);
 
@@ -130,7 +161,7 @@ class StoryController extends AbstractController {
         name: 'version_fulltext',
         requirements: ['id' => '\d+']
     )]
-    public function storyVersionFullText(int $id): Response {
+    public function versionFulltext(int $id): Response {
         ['version' => $version, 'story' => $story, 'chapters' => $chapters]
             = $this->getVersionStoryAndChapters(versionId: $id);
 
@@ -147,7 +178,7 @@ class StoryController extends AbstractController {
         name: 'version_toc',
         requirements: ['id' => '\d+']
     )]
-    public function storyVersionTOC(int $id): Response {
+    public function versionTOC(int $id): Response {
         ['version' => $version, 'story' => $story, 'chapters' => $chapters]
             = $this->getVersionStoryAndChapters(versionId: $id);
 

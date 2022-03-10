@@ -56,7 +56,7 @@ class Version
         nullable: true,
         enumType: Rating::class
     )]
-    private ?string $rating;
+    private ?Rating $rating;
 
     #[ORM\Column(
         name: 'summary',
@@ -162,11 +162,11 @@ class Version
         return $this;
     }
 
-    public function getRating(): ?string {
+    public function getRating(): ?Rating {
         return $this->rating;
     }
 
-    public function setRating(?string $rating): self {
+    public function setRating(?Rating $rating): self {
         $this->rating = $rating;
         return $this;
     }

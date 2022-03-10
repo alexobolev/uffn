@@ -1,5 +1,6 @@
 package fi.sobolev.uffn.common.origins.ao3
 
+import fi.sobolev.uffn.common.data.Rating
 import java.time.LocalDate
 
 
@@ -20,6 +21,14 @@ enum class AO3Rating(private val text: String) {
     }
 
     override fun toString() = text
+}
+
+fun List<AO3Rating>.toCommon(): Rating? {
+    if (this.contains(AO3Rating.Explicit)) { return Rating.E }
+    if (this.contains(AO3Rating.Mature)) { return Rating.M }
+    if (this.contains(AO3Rating.TeenAndUpAudiences)) { return Rating.T }
+    if (this.contains(AO3Rating.GeneralAudiences)) { return Rating.K }
+    return null
 }
 
 

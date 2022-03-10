@@ -90,12 +90,12 @@ a {
   @extend .position-relative;
   @extend .py-2;
 
-  @extend .bg-dark;
   @extend .shadow;
 
   @extend .text-light;
   @extend .text-lowercase;
 
+  background-color: $primary !important;
   font-size: .875em;
   z-index: 9000;
 
@@ -217,6 +217,13 @@ a {
   & > span {
     @extend .pe-3;
   }
+}
+
+.uf-story-rating {
+  &.kids { background-color: $green !important; }
+  &.teens { background-color: $blue !important; }
+  &.mature { background-color: $orange !important; }
+  &.explicit { background-color: $red !important; }
 }
 
 .uf-container-chapter {

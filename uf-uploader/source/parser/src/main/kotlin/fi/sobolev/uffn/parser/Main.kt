@@ -4,6 +4,7 @@ import fi.sobolev.uffn.common.*
 import fi.sobolev.uffn.common.data.*
 import fi.sobolev.uffn.common.fetching.StaticBrowser
 import fi.sobolev.uffn.common.origins.ao3.AO3Parser
+import fi.sobolev.uffn.common.origins.ao3.toCommon
 import fi.sobolev.uffn.common.server.*
 import fi.sobolev.uffn.common.services.*
 
@@ -138,7 +139,7 @@ fun startRedisListener(config: Config.RedisConfig) {
                             this.archivedAt = Instant.now()
                             this.hidden = true
                             this.title = ao3.title
-                            // @todo rating
+                            this.rating = ao3.tags.ratings.toCommon()
                             this.summary = ao3.summary
                             this.notesPre = ao3.notesPre
                             this.notesPost = ao3.notesPost

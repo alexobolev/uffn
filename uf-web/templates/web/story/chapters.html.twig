@@ -1,9 +1,9 @@
 {% extends 'web/base_auth.html.twig' %}
 
-{% block title %}{{ story.info.title }} - uffn{% endblock %}
+{% block title %}{{ story.info.title }} - Chapter {{ chapters[0].sequenceNum + 1}} - uffn{% endblock %}
 
 {% block breadcrumbs %}
-  &rarr; <a href="#">{{ story.info.title }}</a>
+  &rarr; <a href="{{ path('version', { id: story.info.version_id }) }}">{{ story.info.title }}</a>
 {% endblock %}
 
 {% block jumboTitle %}
@@ -13,8 +13,11 @@
   {{ story.info.authors|join(', ') }}
 {% endblock %}
 {% block jumboMeta %}
-  <div class="pt-3 pb-5">
-    <span id="story-rating" class="badge bg-dark">{{ story.meta.rating ?? "N/A" }}</span>
+  <div class="pt-1 pt-sm-3 pb-4 pb-sm-5">
+    <span id="story-rating"
+          class="badge bg-dark uf-story-rating {{ story.meta.rating_class }}">
+      {{ story.meta.rating ?? "?" }}
+    </span>
     <span class="ms-4 uf-story-meta">
     Chapters: <span>{{ story.meta.chapter_count }}</span>
     {% if story.meta.is_complete %}Completed{% endif %}
@@ -34,9 +37,9 @@
 {% endblock %}
 
 {% block jumboExtra %}
-  {% if story.custom_summary %}
-    <div class="mt-4 mb-1">
-      <div class="accordion" id="extraAccordion">
+  <div class="mt-4 mb-1">
+    <div class="accordion" id="extraAccordion">
+      {% if story.custom_summary %}
         <div class="accordion-item">
           <h2 class="accordion-header" id="extraAccordion-heading1">
             <button type="button" class="accordion-button collapsed"
@@ -54,67 +57,79 @@
             </div>
           </div>
         </div>
+      {% endif %}
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="extraAccordion-heading2">
+          <button type="button" class="accordion-button collapsed"
+                  data-bs-toggle="collapse" data-bs-target="#extraAccordion-collapse2"
+                  aria-expanded="false" aria-controls="extraAccordion-collapse2">
+            Metadata
+          </button>
+        </h2>
+        <div class="accordion-collapse collapse collapsed" id="extraAccordion-collapse2"
+             data-bs-parent="#extraAccordion" aria-labelledby="extraAccordion-heading2">
+          <div class="accordion-body">
+            <div class="col">
+              <div class="row">
+                <dt class="col-sm-3 col-lg-2">Retrieved:</dt>
+                <dd class="col-sm-9 col-lg-10">
+                  {{ story.extra.retrieved_on }}
+                </dd>
+
+                <dt class="col-sm-3 col-lg-2">Source:</dt>
+                <dd class="col-sm-9 col-lg-10" style="text-overflow: ellipsis; overflow: hidden;">
+                  <a href="{{ story.extra.link }}" class="text-decoration-none" target="_blank">{{ story.extra.link }}</a>
+                </dd>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  {% endif %}
+  </div>
 {% endblock %}
 
 {% block userActions %}
   <div class="row">
-    <div class="col-md-8 font-monospace small" style="color: #666;">
-      Retrieved: <strong>{{ user_actions.info.retrieved_on }}</strong> <br>
-      Origin:
-        <strong><a class="text-decoration-none" href="{{ user_actions.info.link }}" target="_blank">
-          <span class="d-inline d-sm-none">{{ user_actions.info.mobile_link_name }}</span>
-          <span class="d-none d-sm-inline">{{ user_actions.info.link }}</span>
-        </a></strong>
-    </div>
-    <div class="col-md-4 mt-3 mt-md-0 text-md-end d-flex justify-content-end align-items-start">
+    <div class="mt-3 mt-md-0 text-md-end d-flex justify-content-end align-items-start">
 
       {% block storyChapterNav %}
-        <div class="btn-group me-1">
-          <a href="{{ path('version_toc', { id: story.info.version_id, }) }}"
-             type="button" class="btn btn-secondary btn-sm">Chapters</a>
-          <button type="button" class="btn btn-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="visually-hidden">Toggle Dropdown</span>
-          </button>
+
+        {% if user_actions.nav.prev_index %}
+          {% set prev_path = path('version_chapter', { id: story.info.version_id, chapterNum: user_actions.nav.prev_index }) %}
+          <a href="{{ prev_path }}" type="button" class="btn btn-secondary btn-sm me-1">&laquo; Prev</a>
+        {% else %}
+          <a href="#" type="button" class="btn btn-secondary btn-sm me-1 disabled">&laquo; Prev</a>
+        {% endif %}
+
+        {% if user_actions.nav.next_index %}
+          {% set next_path = path('version_chapter', { id: story.info.version_id, chapterNum: user_actions.nav.next_index }) %}
+          <a href="{{ next_path }}" type="button" class="btn btn-secondary btn-sm me-1">Next &raquo;</a>
+        {% else %}
+          <a href="#" type="button" class="btn btn-secondary btn-sm me-1 disabled">Next &raquo;</a>
+        {% endif %}
+
+        <div class="btn-group">
+          <a href="#" type="button" role="button" class="btn btn-secondary btn-sm dropdown-toggle"
+             data-bs-toggle="dropdown" aria-expanded="false">Chapters</a>
           <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-end text-md-end">
-
-            {% if user_actions.nav.prev_index %}
-              <li><a class="dropdown-item small"
-                     href="{{ path('version_chapter', {
-                       id: story.info.version_id,
-                       chapterNum: user_actions.nav.prev_index
-                     }) }}">« Prev chapter</a></li>
-            {% else %}
-              <li><a class="dropdown-item small disabled" href="#">« Prev chapter</a></li>
-            {% endif %}
-
-            {% if user_actions.nav.next_index %}
-              <li><a class="dropdown-item small"
-                     href="{{ path('version_chapter', {
-                       id: story.info.version_id,
-                       chapterNum: user_actions.nav.next_index
-                     }) }}">Next chapter »</a></li>
-            {% else %}
-              <li><a class="dropdown-item small disabled" href="#">Next chapter »</a></li>
-            {% endif %}
-
-            <li><hr class="dropdown-divider small"></li>
             <li><a class="dropdown-item small" href="{{ path('version_toc', { id: story.info.version_id}) }}">Chapter index</a></li>
             <li><a class="dropdown-item small" href="{{ path('version_fulltext', { id: story.info.version_id }) }}">Full text</a></li>
           </ul>
         </div>
       {% endblock %}
 
-      <div class="btn-group ms-2">
+      <div class="btn-group ms-1">
         <button type="button" class="btn btn-warning btn-sm">Add to list</button>
         <button type="button" class="btn btn-warning btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
           <span class="visually-hidden">Toggle Dropdown</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-end text-md-end">
-          <li><a class="dropdown-item small" href="#">Other versions</a></li>
           <li><a class="dropdown-item small" href="#">Edit story</a></li>
+          <li><a class="dropdown-item small" href="#">Edit version</a></li>
+          <li><hr class="dropdown-divider small"></li>
+          <li><a class="dropdown-item small" href="#">Other versions</a></li>
         </ul>
       </div>
 
