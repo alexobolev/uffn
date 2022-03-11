@@ -7,8 +7,7 @@
     {% block versionOptionsLinks %}
 
       {% set lists_link = '#' %}
-      {% set edit_story_link = '#' %}
-      {% set edit_version_link = '#' %}
+      {% set edit_story_link = path('story_edit', { id: story.info.story_id }) %}
       {% set versions_link = path('story_versions', { id: story.info.story_id }) %}
 
       <div class="btn-group ms-1">
@@ -16,9 +15,7 @@
            data-bs-toggle="dropdown" aria-expanded="false">Options</a>
         <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-end text-md-end">
           <li><a class="dropdown-item small" href="{{ lists_link }}">Manage lists</a></li>
-          <li><hr class="dropdown-divider small"></li>
           <li><a class="dropdown-item small" href="{{ edit_story_link }}">Edit story</a></li>
-          <li><a class="dropdown-item small" href="{{ edit_version_link }}">Edit version</a></li>
           <li><hr class="dropdown-divider small"></li>
           <li><a class="dropdown-item small" href="{{ versions_link }}">Other versions</a></li>
         </ul>
