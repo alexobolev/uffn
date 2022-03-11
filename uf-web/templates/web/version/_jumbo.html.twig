@@ -1,0 +1,46 @@
+{% set jumboTitle %}
+  {{ story.info.title }}
+{% endset %}
+
+{% set jumboLead %}
+  {{ story.info.authors|join(', ') }}
+{% endset %}
+
+{% set jumboMeta %}
+  <div class="pt-1 pt-sm-3 pb-4 pb-sm-5">
+    {% set ratingClass = story.meta.rating_class %}
+    {% set ratingChar = story.meta.rating ?? "?" %}
+    <span class="badge uf-story-rating {{ ratingClass }}">{{ ratingChar }}</span>
+    <span class="ms-4 uf-story-meta">
+    {% block chapterMeta %}
+      Chapters: <span>{{ story.meta.chapter_count }}</span>
+      {% if story.meta.is_complete %}Completed{% endif %}
+    {% endblock %}
+  </span>
+  </div>
+{% endset %}
+
+{% set jumboDetails %}
+  {% set summaryText = story.custom_summary
+    ? story.custom_summary
+    : story.original_summary
+  %}
+  <div class="row">
+    <div class="col col-12 col-lg-10">
+      {{ summaryText|raw }}
+    </div>
+  </div>
+{% endset %}
+
+{% set jumboExtra %}
+  {% include 'web/version/_jumbo_accordion.html.twig' %}
+{% endset %}
+
+
+{% include 'web/common/_global_jumbo.html.twig' with {
+    'title': jumboTitle,
+    'lead': jumboLead,
+    'meta': jumboMeta,
+    'details': jumboDetails,
+    'extra': jumboExtra
+} %}

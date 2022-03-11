@@ -1,0 +1,43 @@
+{% set chapter_idx1 = chapter.sequenceNum + 1 %}
+{% set chapter_id = 'chapter-' ~ chapter_idx1 %}
+{% set chapter_link = path('version_chapter', { id: story.info.version_id, chapterNum: chapter_idx1 }) %}
+
+
+<section id="{{ chapter_id }}" class="uf-chapter-section">
+
+  <h3 class="text-center mb-5">
+    <a class="uf-chapter-anchor" href="{{ '#' ~ chapter_id }}">&sect;</a>
+    <a class="text-decoration-none" href="{{ chapter_link }}">
+      Chapter {{ chapter_idx1 }}
+      {% if chapter.title is not null %}
+        &ndash; {{ chapter.title }}
+      {% endif %}
+    </a>
+  </h3>
+
+  {% if chapter.summary %}
+    <div class="uf-chapter-note summary">
+      <h5 class="text-center">Summary</h5>
+      {{ chapter.summary|raw }}
+    </div>
+  {% endif %}
+
+  {% if chapter.notesPre %}
+    <div class="uf-chapter-note an">
+      <h5 class="text-center">Author's note</h5>
+      {{ chapter.notesPre|raw }}
+    </div>
+  {% endif %}
+
+  <div class="uf-chapter-contents">
+    {{ chapter.contents|raw }}
+  </div>
+
+  {% if chapter.notesPost %}
+    <div class="uf-chapter-note an mt-5">
+      <h5 class="text-center">Afterword</h5>
+      {{ chapter.notesPost|raw }}
+    </div>
+  {% endif %}
+
+</section>

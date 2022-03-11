@@ -1,0 +1,24 @@
+{# Variables:
+     itemName - id in the dom
+     header - header button text
+     contents - html to fold
+#}
+
+{% set headingId = accordionName ~ '-heading-' ~ itemName %}
+{% set collapseId = accordionName ~ '-collapse-' ~ itemName %}
+
+<div class="accordion-item">
+  <h2 class="accordion-header" id="{{ headingId }}">
+    <button type="button" class="accordion-button collapsed"
+            data-bs-toggle="collapse" data-bs-target="#{{ collapseId }}"
+            aria-expanded="false" aria-controls="{{ collapseId }}">
+      {{ header }}
+    </button>
+  </h2>
+  <div class="accordion-collapse collapse collapsed" id="{{ collapseId }}"
+       data-bs-parent="#{{ accordionName }}" aria-labelledby="{{ headingId }}">
+    <div class="accordion-body">
+      {{ contents|raw }}
+    </div>
+  </div>
+</div>

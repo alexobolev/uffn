@@ -20,7 +20,7 @@ class User {
     #[ORM\Column(
         name: 'login',
         type: "string",
-        length: 255
+        length: 25
     )]
     private ?string $login;
 

@@ -1,0 +1,36 @@
+{# Variables:
+      title - contents of the titular text
+      lead - contents of the subtext under the title
+      meta - contents of the metablock, if any
+      details - contents of the text block under the meta, if any
+      extra - arbitrary contents under the details, if any
+#}
+
+<div class="uf-jumbo">
+  <div class="container-md">
+    <div class="row">
+
+      {# Big shiny text on top of the page #}
+      <h1 class="uf-jumbo-title">{{ title|raw }}</h1>
+
+      {# Smaller commentary to the big shiny text #}
+      <p class="uf-jumbo-lead">{{ lead|raw }}</p>
+
+      {# Key-value information row #}
+      {% if meta is defined %}
+        <div class="uf-jumbo-meta">{{ meta|raw }}</div>
+      {% endif %}
+
+      {# Textual contents of the jumbo #}
+      {% if details is defined %}
+        <div class="uf-jumbo-details">{{ details|raw }}</div>
+      {% endif %}
+
+      {# Arbitrary stuff #}
+      {% if extra is defined %}
+        <div class="uf-jumbo-extra">{{ extra|raw }}</div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>

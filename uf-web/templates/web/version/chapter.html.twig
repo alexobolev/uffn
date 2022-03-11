@@ -1,0 +1,87 @@
+{% extends 'web/base.html.twig' %}
+
+
+{% set chapter = chapters[0] %}
+
+{% set breadcrumbs %}
+  {% set storyLink = path('version', { id: story.info.version_id }) %}
+  {% set storyTitle = story.info.title %}
+  {% set chapterLink = path('version_chapter', { id: story.info.version_id, chapterNum: chapter.sequenceNum + 1 }) %}
+  {% set chapterTitle = 'Chapter ' ~ (chapter.sequenceNum + 1) %}
+  &rarr; <a href="{{ storyLink }}" class="uf-ellipsis" style="max-width: 250px;">{{ storyTitle }}</a>
+  &rarr; <a href="{{ chapterLink }}">{{ chapterTitle }}</a>
+{% endset %}
+
+{% set nav_links %}
+  {% set prev_hidden = user_actions.nav.prev_index is null %}
+  {% set prev_link = path('version_chapter', { id: story.info.version_id, chapterNum: user_actions.nav.prev_index ?? 1 }) %}
+
+  {% set next_hidden = user_actions.nav.next_index is null %}
+  {% set next_link = path('version_chapter', { id: story.info.version_id, chapterNum: user_actions.nav.next_index ?? 1 }) %}
+
+  {% set btn_class = 'btn btn-secondary btn-sm me-1' %}
+
+  <a href="{{ prev_link }}" class="{{ btn_class}} {% if prev_hidden %} disabled {% endif %}" type="button">&laquo; Prev</a>
+  <a href="{{ next_link }}" class="{{ btn_class}} {% if next_hidden %} disabled {% endif %}" type="button">Next &raquo;</a>
+
+
+  {% set toc_link = path('version_toc', { id: story.info.version_id}) %}
+  {% set full_link = path('version_fulltext', { id: story.info.version_id}) %}
+
+  <div class="btn-group">
+    <a class="btn btn-secondary btn-sm dropdown-toggle" type="button" role="button"
+       href="#" data-bs-toggle="dropdown" aria-expanded="false">Chapters</a>
+    <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-end text-md-end">
+      <li><a class="dropdown-item small" href="{{ toc_link }}">Chapter index</a></li>
+      <li><a class="dropdown-item small" href="{{ full_link }}">Full text</a></li>
+    </ul>
+  </div>
+{% endset %}
+
+{% set main_contents %}
+  <div class="uf-container-chapter mt-5">
+    {% include 'web/version/_chapter.html.twig' %}
+  </div>
+  <div class="uf-container-chapter mt-5">
+    {% include 'web/version/_bottom_nav.html.twig' %}
+  </div>
+{% endset %}
+
+
+
+{% block title %}
+  {{ story.info.title }} - {{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+  {# Topbar - breadcrumbs and user profile link #}
+  {% include 'web/common/_global_topbar.html.twig' with {
+    'breadcrumbs': breadcrumbs
+  } %}
+
+  {# Jumbo - page header and metadata #}
+  {% if chapter.sequenceNum + 1 == 1 %}
+    {% include 'web/version/_jumbo.html.twig' %}
+  {% endif %}
+
+  {# User actions - a bunch of buttons #}
+  {% embed 'web/version/_user_actions.html.twig' %}
+    {% block versionNavLinks %}
+      {{ nav_links }}
+    {% endblock %}
+  {% endembed %}
+
+  {# Main content #}
+  <main class="uf-main">
+    <div class="container-md">
+      <div class="row">
+        {{ main_contents }}
+      </div>
+    </div>
+  </main>
+
+  {# Global footer - some links and a disclaimer #}
+  {% include 'web/common/_global_footer.html.twig' %}
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% set chapterTools %}
+  <div class="d-flex justify-content-end align-items-start">
+
+    {% block versionNavLinks %}
+    {% endblock %}
+
+    {% block versionOptionsLinks %}
+
+      {% set lists_link = '#' %}
+      {% set edit_story_link = '#' %}
+      {% set edit_version_link = '#' %}
+      {% set versions_link = '#' %}
+
+      <div class="btn-group ms-1">
+        <a href="#" type="button" role="button" class="btn btn-warning btn-sm dropdown-toggle"
+           data-bs-toggle="dropdown" aria-expanded="false">Options</a>
+        <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-end text-md-end">
+          <li><a class="dropdown-item small" href="{{ lists_link }}">Manage lists</a></li>
+          <li><hr class="dropdown-divider small"></li>
+          <li><a class="dropdown-item small" href="{{ edit_story_link }}">Edit story</a></li>
+          <li><a class="dropdown-item small" href="{{ edit_version_link }}">Edit version</a></li>
+          <li><hr class="dropdown-divider small"></li>
+          <li><a class="dropdown-item small" href="{{ versions_link }}">Other versions</a></li>
+        </ul>
+      </div>
+
+    {% endblock %}
+
+  </div>
+{% endset %}
+
+
+{% include 'web/common/_global_user_actions.html.twig' with {
+    'leftSide': null,
+    'rightSide': chapterTools
+} %}

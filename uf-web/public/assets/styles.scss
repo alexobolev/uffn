@@ -107,6 +107,8 @@ a {
     @extend .text-reset;
     @extend .text-decoration-none;
 
+    @extend .d-inline-block;
+
     @extend .border;
     border-color: transparent !important;
 
@@ -116,6 +118,14 @@ a {
 
     &:focus-visible {
       @extend .border-white;
+    }
+
+    &.uf-ellipsis {
+      display: inline-block;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      vertical-align: top;
+      white-space: nowrap;
     }
   }
 }
@@ -131,6 +141,8 @@ a {
   &-title {
     @extend .display-5;
     @extend .mb-0;
+    @extend .mt-3;
+    @extend .mt-sm-0;
   }
 
   &-lead {
@@ -229,6 +241,9 @@ a {
 .uf-container-chapter {
   max-width: 960px;
 
+  margin-left: auto !important;
+  margin-right: auto !important;
+
   @media (min-width:576px) {
     padding-left: 2rem;
     padding-right: 2rem;
@@ -240,6 +255,10 @@ a {
   }
 }
 
+.uf-chapter-section:not(:first-child) {
+  @extend .pt-5;
+}
+
 .uf-chapter-note {
   @extend .mb-5;
   @extend .p-4;
@@ -247,11 +266,11 @@ a {
   border-radius: .3rem !important;
 
   &.an {
-    background-color: $gray-200;
+    background-color: $gray-100;
   }
 
   &.summary {
-    background-color: $purple-200;
+    background-color: $purple-100;
   }
 
   & > h5 {
@@ -265,6 +284,7 @@ a {
   opacity: 0.25;
   text-decoration: none;
   transition-duration: 250ms;
+  vertical-align: top;
 
   &:active, &:focus, &:hover {
     color: $primary;

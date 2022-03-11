@@ -133,7 +133,9 @@ class StoryController extends AbstractController {
             );
         }
 
-        return $this->render('web/story/chapters.html.twig', array_merge_recursive (
+        $chapter = $chapters[$chapterNum - 1];
+
+        return $this->render('web/version/chapter.html.twig', array_merge_recursive (
             $this->makeCommonPageData($story, $version, $chapters), [
                 'user_actions' => [
                     'nav' => [
@@ -141,7 +143,7 @@ class StoryController extends AbstractController {
                         'next_index' => ($chapterNum < count($chapters)) ? $chapterNum + 1 : null
                     ]
                 ],
-                'chapters' => [ $chapters[$chapterNum - 1] ],
+                'chapters' => [ $chapter ],
                 'bottom_nav' => [
                     'prev_index' => ($chapterNum > 1) ? $chapterNum - 1 : null,
                     'next_index' => ($chapterNum < count($chapters)) ? $chapterNum + 1 : null
@@ -165,7 +167,7 @@ class StoryController extends AbstractController {
         ['version' => $version, 'story' => $story, 'chapters' => $chapters]
             = $this->getVersionStoryAndChapters(versionId: $id);
 
-        return $this->render('web/story/fulltext.html.twig', array_merge_recursive (
+        return $this->render('web/version/fulltext.html.twig', array_merge_recursive (
             $this->makeCommonPageData($story, $version, $chapters), [
                 'chapters' => $chapters
             ]
@@ -182,7 +184,7 @@ class StoryController extends AbstractController {
         ['version' => $version, 'story' => $story, 'chapters' => $chapters]
             = $this->getVersionStoryAndChapters(versionId: $id);
 
-        return $this->render('web/story/toc.html.twig', array_merge_recursive (
+        return $this->render('web/version/toc.html.twig', array_merge_recursive (
             $this->makeCommonPageData($story, $version, $chapters), [
                 'chapters' => $chapters
             ]

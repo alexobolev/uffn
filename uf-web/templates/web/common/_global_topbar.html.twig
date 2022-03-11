@@ -1,0 +1,13 @@
+{# Variables:
+     breadcrumbs - html to follow the archive home link
+#}
+
+<nav class="uf-topbar">
+  <div class="container-md d-flex">
+    <div style="flex: 1; min-width: 0;">
+      <a href="/" class="uf-site-logo">uffn</a>
+      <span class="d-none d-sm-inline-block">{{ breadcrumbs|raw }}</span>
+    </div>
+    <a href="#">{{ 'guest' }}</a>
+  </div>
+</nav>

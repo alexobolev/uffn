@@ -1,0 +1,71 @@
+{% extends 'web/base.html.twig' %}
+
+
+{% set breadcrumbs %}
+  {% set story_link = path('version', { id: story.info.version_id }) %}
+  {% set story_title = story.info.title %}
+  {% set toc_link = path('version_toc', { id: story.info.version_id }) %}
+  &rarr; <a href="{{ story_link }}" class="uf-ellipsis" style="max-width: 250px;">{{ story_title }}</a>
+  &rarr; <a href="{{ toc_link }}">Chapter index</a>
+{% endset %}
+
+{% set nav_links %}
+  {% set full_link = path('version_fulltext', { id: story.info.version_id}) %}
+  <a class="btn btn-secondary btn-sm" type="button" href="{{ full_link }}">Full text</a>
+{% endset %}
+
+{% set main_contents %}
+  <div class="uf-container-chapter mt-5">
+    <h3 class="mb-4">Table of contents</h3>
+    <ol>
+      {% for chapter in chapters %}
+        {% set link = path('version_chapter', { id: story.info.version_id, chapterNum: chapter.sequenceNum + 1 }) %}
+        {% set text %}
+          {% if chapter.title %}
+            {{ chapter.title }}
+          {% else %}
+            Chapter {{ chapter.sequenceNum + 1 }}
+          {% endif %}
+        {% endset %}
+        <li><a class="ps-2 text-decoration-none" href="{{ link }}">{{ text }}</a></li>
+      {% endfor %}
+    </ol>
+  </div>
+{% endset %}
+
+
+
+{% block title %}
+  {{ story.info.title }} - chapter index - {{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+  {# Topbar - breadcrumbs and user profile link #}
+  {% include 'web/common/_global_topbar.html.twig' with {
+    'breadcrumbs': breadcrumbs
+  } %}
+
+  {# Jumbo - page header and metadata #}
+  {% include 'web/version/_jumbo.html.twig' %}
+
+  {# User actions - a bunch of buttons #}
+  {% embed 'web/version/_user_actions.html.twig' %}
+    {% block versionNavLinks %}
+      {{ nav_links }}
+    {% endblock %}
+  {% endembed %}
+
+  {# Main content #}
+  <main class="uf-main">
+    <div class="container-md">
+      <div class="row">
+        {{ main_contents }}
+      </div>
+    </div>
+  </main>
+
+  {# Global footer - some links and a disclaimer #}
+  {% include 'web/common/_global_footer.html.twig' %}
+
+{% endblock %}
