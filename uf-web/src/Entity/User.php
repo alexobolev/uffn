@@ -52,7 +52,7 @@ class User {
 
     #[ORM\Column(
         name: 'is_admin',
-        type: 'bool'
+        type: 'boolean'
     )]
     private ?bool $isAdmin;
 

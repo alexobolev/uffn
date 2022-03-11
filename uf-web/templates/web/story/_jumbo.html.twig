@@ -1,0 +1,43 @@
+{% set jumboTitle %}
+  {{ story.origin.archive }}://{{ story.origin.identifier }}
+{% endset %}
+
+{% set jumboLead %}
+  Uploaded by <strong>{{ story.info.owner.login }}</strong>
+{% endset %}
+
+{% set jumboMeta %}
+  <div class="pt-1 pt-sm-3">
+    {% if story.custom.rating is not null %}
+      <span class="badge uf-story-rating {{ story.custom.rating|rating_class }} me-1"
+            title="Story rating overrides version ratings">
+        {{ story.custom.rating|rating_name }}
+      </span>
+    {% endif %}
+
+    {% set visibility_class = story.info.public ? 'bg-dark' : 'bg-secondary' %}
+    {% set visibility_text = story.info.public ? 'Public' : 'Private' %}
+    <span class="badge {{ visibility_class }}">
+      {{ visibility_text }}
+    </span>
+  </div>
+{% endset %}
+
+{% set jumboDetails %}
+  {% if story.custom.summary %}
+    <div class="row pt-4 pt-sm-5">
+      <div class="col col-12 col-lg-10">
+        <h5>Summary override:</h5>
+        {{ story.custom.summary|raw }}
+      </div>
+    </div>
+  {% endif %}
+{% endset %}
+
+
+{% include 'web/common/_global_jumbo.html.twig' with {
+  'title': jumboTitle,
+  'lead': jumboLead,
+  'meta': jumboMeta,
+  'details': jumboDetails
+} %}

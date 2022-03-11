@@ -17,17 +17,17 @@
       <p class="uf-jumbo-lead">{{ lead|raw }}</p>
 
       {# Key-value information row #}
-      {% if meta is defined %}
+      {% if meta is defined and meta is not null %}
         <div class="uf-jumbo-meta">{{ meta|raw }}</div>
       {% endif %}
 
       {# Textual contents of the jumbo #}
-      {% if details is defined %}
+      {% if details is defined and details is not null %}
         <div class="uf-jumbo-details">{{ details|raw }}</div>
       {% endif %}
 
       {# Arbitrary stuff #}
-      {% if extra is defined %}
+      {% if extra is defined and extra is not null %}
         <div class="uf-jumbo-extra">{{ extra|raw }}</div>
       {% endif %}
 

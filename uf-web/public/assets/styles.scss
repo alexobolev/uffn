@@ -218,7 +218,7 @@ a {
 
 
 
-/// Story controller stuff.
+/// Version controller stuff.
 /// ========================================
 
 .uf-story-meta {
@@ -238,7 +238,7 @@ a {
   &.explicit { background-color: $red !important; }
 }
 
-.uf-container-chapter {
+.uf-chapter-container {
   max-width: 960px;
 
   margin-left: auto !important;
@@ -628,8 +628,8 @@ a {
 
 .uf-list-entry {
   @extend .d-block;
-  @extend .mb-1;
-  @extend .mb-sm-2;
+  @extend .mb-2;
+  @extend .mb-md-3;
   @extend .p-3;
 
   @extend .border;
@@ -661,8 +661,14 @@ a {
     }
   }
 
+
+  header,
   .header {
-    @extend .d-block;
+    @extend .d-flex;
+    @extend .flex-row;
+    @extend .align-items-center;
+
+    white-space: nowrap;
 
     & > span.rating {
       @extend .d-inline-block;
@@ -687,16 +693,19 @@ a {
       font-weight: 600;
       border-bottom: 1px dotted;
 
+      overflow: hidden;
+      text-overflow: ellipsis;
+
       &:active, &:hover {
         color: $primary !important;
       }
     }
 
     & > span.secondary {
-      @extend .d-inline-block;
-      @extend .ms-2;
+      @extend .d-none;
+      @extend .d-sm-inline-block;
       @extend .fst-italic;
-      opacity: 0.75;
+      color: transparentize($body-color, .25);
     }
   }
 
@@ -706,16 +715,17 @@ a {
 
     font-size: .75em;
     font-weight: 600;
-    opacity: 0.8;
+    color: transparentize($body-color, .25);
+
+    line-height: 2;
 
     & > span {
-      @extend .d-inline-block;
-      @extend .me-3;
+      @extend .me-2;
+      @extend .me-sm-3;
     }
   }
 
   .text {
-    @extend .d-block;
     @extend .mt-2;
     @extend .small;
     @extend .fst-italic;

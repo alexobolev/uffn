@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Story;
 use App\Entity\Version;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -45,32 +46,34 @@ class VersionRepository extends ServiceEntityRepository
         }
     }
 
-    // /**
-    //  * @return Version[] Returns an array of Version objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('v')
-            ->andWhere('v.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('v.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+    /**
+     * Get all versions of a story, sorted in reverse archival order.
+     */
+    public function findAllSorted(Story $story) {
+        $query = $this->_em
+            ->createQuery(
+                'SELECT v
+                FROM App\Entity\Version v
+                WHERE v.story = :story
+                ORDER BY v.archivedAt DESC')
+            ->setParameter('story', $story);
 
-    /*
-    public function findOneBySomeField($value): ?Version
-    {
-        return $this->createQueryBuilder('v')
-            ->andWhere('v.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        return $query->getResult();
     }
-    */
+
+    /**
+     * Get most recently archived version of a story.
+     */
+    public function findMostRecent(Story $story) {
+        $query = $this->_em
+            ->createQuery(
+                'SELECT v
+                FROM App\Entity\Version v
+                WHERE v.story = :story
+                ORDER BY v.archivedAt DESC')
+            ->setParameter('story', $story)
+            ->setMaxResults(1);
+
+        return $query->getSingleResult();
+    }
 }

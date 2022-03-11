@@ -1,0 +1,12 @@
+{% set storyTools %}
+  <div class="d-flex justify-content-end align-items-start">
+    {% block storyLinks %}
+    {% endblock %}
+  </div>
+{% endset %}
+
+
+{% include 'web/common/_global_user_actions.html.twig' with {
+  'leftSide': null,
+  'rightSide': storyTools
+} %}

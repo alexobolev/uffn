@@ -19,7 +19,7 @@
   {% set next_hidden = user_actions.nav.next_index is null %}
   {% set next_link = path('version_chapter', { id: story.info.version_id, chapterNum: user_actions.nav.next_index ?? 1 }) %}
 
-  {% set btn_class = 'btn btn-secondary btn-sm me-1' %}
+  {% set btn_class = 'btn btn-light btn-sm me-1' %}
 
   <a href="{{ prev_link }}" class="{{ btn_class}} {% if prev_hidden %} disabled {% endif %}" type="button">&laquo; Prev</a>
   <a href="{{ next_link }}" class="{{ btn_class}} {% if next_hidden %} disabled {% endif %}" type="button">Next &raquo;</a>
@@ -29,7 +29,7 @@
   {% set full_link = path('version_fulltext', { id: story.info.version_id}) %}
 
   <div class="btn-group">
-    <a class="btn btn-secondary btn-sm dropdown-toggle" type="button" role="button"
+    <a class="btn btn-light btn-sm dropdown-toggle" type="button" role="button"
        href="#" data-bs-toggle="dropdown" aria-expanded="false">Chapters</a>
     <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-end text-md-end">
       <li><a class="dropdown-item small" href="{{ toc_link }}">Chapter index</a></li>
@@ -39,10 +39,10 @@
 {% endset %}
 
 {% set main_contents %}
-  <div class="uf-container-chapter mt-5">
+  <div class="uf-chapter-container mt-5">
     {% include 'web/version/_chapter.html.twig' %}
   </div>
-  <div class="uf-container-chapter mt-5">
+  <div class="uf-chapter-container mt-5">
     {% include 'web/version/_bottom_nav.html.twig' %}
   </div>
 {% endset %}

@@ -17,177 +17,69 @@ class StoryController extends AbstractController {
         $this->doctrine = $doctrine;
     }
 
-    private static function ratingToClass(?Rating $rating): string {
-        if ($rating === null) {
-            return '';
-        }
 
-        return match ($rating) {
-            Rating::K => 'kids',
-            Rating::T => 'teens',
-            Rating::M => 'mature',
-            Rating::E => 'explicit'
-        };
-    }
+    #[Route(
+        '/story/{id}',
+        name: 'story',
+        requirements: ['id' => '\d+']
+    )]
+    public function index(int $id): Response {
+        $story = $this->doctrine
+            ->getRepository(Story::class)
+            ->find($id);
 
-    private function getVersionStoryAndChapters(int $versionId) {
-        $version = $this->doctrine->getRepository(Version::class)->find(id: $versionId);
-        if (!$version) {
-            throw $this->createNotFoundException (
-                'No version found for id = ' . $versionId
-            );
-        }
-
-        $story = $version->getStory();
         if (!$story) {
             throw $this->createNotFoundException (
-                'No story found for version id = ' . $versionId
+                'no story found for id = ' . $id
             );
         }
 
-        $chapterRepo = $this->doctrine->getRepository(Chapter::class);
-        $chapters = $chapterRepo->findAllSorted($version);
-        if (count($chapters) == 0) {
-            throw $this->createNotFoundException (
-                'No chapters found for version with id = ' . $versionId
-            );
-        }
+        $latestVersion = $this->doctrine
+            ->getRepository(Version::class)
+            ->findMostRecent($story);
 
-        return [
-          'version' => $version,
-          'story' => $story,
-          'chapters' => $chapters
-        ];
+        return $this->redirectToRoute('version', ['id' => $latestVersion->getId()]);
     }
-    private function makeCommonPageData(Story $story, Version $version, $chapters) {
-        $rating = $story->getRating() ?? $version->getRating();
-        if (empty($rating)) {
-            $rating = null;
+
+
+    #[Route(
+        '/story/{id}/versions',
+        name: 'story_versions',
+        requirements: ['id' => '\d+']
+    )]
+    public function versions(int $id): Response {
+        $story = $this->doctrine
+            ->getRepository(Story::class)
+            ->find($id);
+
+        if (!$story) {
+            throw $this->createNotFoundException (
+                'no story found for id = ' . $id
+            );
         }
 
-        return [
+        $versions = $this->doctrine
+            ->getRepository(Version::class)
+            ->findAllSorted($story);
+
+        return $this->render('web/story/versions.html.twig', [
             'story' => [
-                'info' => [
-                    'title' => $version->getTitle(),
-                    'authors' => array_map(
-                        fn($author): string => $author->getName(),
-                        $version->getAuthors()->getValues()),
-                    'story_id' => $story->getId(),
-                    'version_id' => $version->getId(),
+                '_instance' => $story,
+                'id' => $story->getId(),
+                'origin' => [
+                    'archive' => $story->getOriginArchive()->value,
                     'identifier' => $story->getOriginIdentifier()
                 ],
-                'meta' => [
-                    'rating' => $rating?->value,
-                    'rating_class' => $rating ? self::ratingToClass($rating) : '',
-                    'chapter_count' => count($chapters),
-                    'is_complete' => $version->getIsCompleted(),
+                'info' => [
+                    'public' => $story->getIsPublic(),
+                    'owner' => $story->getOwner(),
                 ],
-                'custom_summary' => $story->getSummary(),
-                'original_summary' => $version->getSummary(),
-                'extra' => [
-                    'retrieved_on' => $version->getArchivedAt()->format('d/m/Y H:i:s'),
-                    'link' => sprintf('https://archiveofourown.org/works/%d', $story->getOriginIdentifier()),
-                    'mobile_link_name' => sprintf('%s://%d',
-                        $story->getOriginArchive()->value,
-                        $story->getOriginIdentifier())
+                'custom' => [
+                    'summary' => $story->getSummary(),
+                    'rating' => $story->getRating(),
                 ]
             ],
-            'user_actions' => [ ]
-        ];
-    }
-
-    /**
-     * Redirect version to its first chapter.
-     *
-     * @param int $id           Version instance index.
-     */
-    #[Route(
-        '/versions/{id}',
-        name: 'version',
-        requirements: ['id' => '\d+']
-    )]
-    public function version(int $id): Response {
-        return $this->redirectToRoute('version_chapter', ['id' => $id, 'chapterNum' => 1]);
-    }
-
-    /**
-     * Display a single chapter with story/version info.
-     * This is the default starting story display.
-     *
-     * @param int $id           Version instance index.
-     * @param int $chapterNum   Chapter index, must belong to the version.
-     */
-    #[Route(
-        '/versions/{id}/chapters/{chapterNum}',
-        name: 'version_chapter',
-        requirements: ['id' => '\d+', 'chapterNum' => '\d+']
-    )]
-    public function versionChapter(int $id, int $chapterNum): Response {
-        ['version' => $version, 'story' => $story, 'chapters' => $chapters]
-            = $this->getVersionStoryAndChapters(versionId: $id);
-
-
-        if ($chapterNum > count($chapters) || $chapterNum < 1) {
-            throw $this->createNotFoundException (
-                'Requested chapter offset ' . $chapterNum . ' is invalid'
-            );
-        }
-
-        $chapter = $chapters[$chapterNum - 1];
-
-        return $this->render('web/version/chapter.html.twig', array_merge_recursive (
-            $this->makeCommonPageData($story, $version, $chapters), [
-                'user_actions' => [
-                    'nav' => [
-                        'prev_index' => ($chapterNum > 1) ? $chapterNum - 1 : null,
-                        'next_index' => ($chapterNum < count($chapters)) ? $chapterNum + 1 : null
-                    ]
-                ],
-                'chapters' => [ $chapter ],
-                'bottom_nav' => [
-                    'prev_index' => ($chapterNum > 1) ? $chapterNum - 1 : null,
-                    'next_index' => ($chapterNum < count($chapters)) ? $chapterNum + 1 : null
-                ]
-            ]
-        ));
-    }
-
-
-    /**
-     * Display all chapters, with story/version info on top.
-     *
-     * @param int $id Version instance index.
-     */
-    #[Route(
-        '/versions/{id}/fulltext',
-        name: 'version_fulltext',
-        requirements: ['id' => '\d+']
-    )]
-    public function versionFulltext(int $id): Response {
-        ['version' => $version, 'story' => $story, 'chapters' => $chapters]
-            = $this->getVersionStoryAndChapters(versionId: $id);
-
-        return $this->render('web/version/fulltext.html.twig', array_merge_recursive (
-            $this->makeCommonPageData($story, $version, $chapters), [
-                'chapters' => $chapters
-            ]
-        ));
-    }
-
-
-    #[Route(
-        '/versions/{id}/toc',
-        name: 'version_toc',
-        requirements: ['id' => '\d+']
-    )]
-    public function versionTOC(int $id): Response {
-        ['version' => $version, 'story' => $story, 'chapters' => $chapters]
-            = $this->getVersionStoryAndChapters(versionId: $id);
-
-        return $this->render('web/version/toc.html.twig', array_merge_recursive (
-            $this->makeCommonPageData($story, $version, $chapters), [
-                'chapters' => $chapters
-            ]
-        ));
+            'versions' => $versions,
+        ]);
     }
 }

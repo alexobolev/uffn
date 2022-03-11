@@ -9,7 +9,7 @@
       {% set lists_link = '#' %}
       {% set edit_story_link = '#' %}
       {% set edit_version_link = '#' %}
-      {% set versions_link = '#' %}
+      {% set versions_link = path('story_versions', { id: story.info.story_id }) %}
 
       <div class="btn-group ms-1">
         <a href="#" type="button" role="button" class="btn btn-warning btn-sm dropdown-toggle"

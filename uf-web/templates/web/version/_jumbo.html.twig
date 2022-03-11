@@ -8,9 +8,9 @@
 
 {% set jumboMeta %}
   <div class="pt-1 pt-sm-3 pb-4 pb-sm-5">
-    {% set ratingClass = story.meta.rating_class %}
-    {% set ratingChar = story.meta.rating ?? "?" %}
-    <span class="badge uf-story-rating {{ ratingClass }}">{{ ratingChar }}</span>
+    <span class="badge uf-story-rating {{ story.meta.rating|rating_class }}">
+      {{ story.meta.rating|rating_name }}
+    </span>
     <span class="ms-4 uf-story-meta">
     {% block chapterMeta %}
       Chapters: <span>{{ story.meta.chapter_count }}</span>
