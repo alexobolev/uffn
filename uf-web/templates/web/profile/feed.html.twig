@@ -1,0 +1,52 @@
+{% extends 'web/profile/base_profile.html.twig' %}
+{% set active_nav_key = 'feed' %}
+
+
+{% block breadcrumbs %}
+  {{ parent() }}
+  &rarr; <a href="{{ path('profile_feed') }}">Feed</a>
+{% endblock %}
+
+{% block main_contents %}
+  <h3 class="py-3 pt-sm-4 pb-sm-5">
+    Uploaded &amp; visible stories
+    <span class="badge rounded-pill bg-secondary ms-2 ms-sm-4">{{ versions|length }}</span>
+  </h3>
+  <div class="row">
+    <div class="col col-12 col-md-8 col-lg-7">
+      {% for version in versions %}
+
+        {% set not_my_story = version.story.owner != app.user %}
+
+        {% set secondary_html %}
+          {% if not_my_story %}
+            <i class="bi bi-people-fill" title="Uploaded by {{ version.story.owner.login }}"></i>
+          {% endif %}
+        {% endset %}
+        {% set additional_style %}
+          {% if not_my_story %}
+            border-style: dashed !important;
+          {% endif %}
+        {% endset %}
+
+        {% include 'web/common/_shared_list_entry.html.twig' with {
+          link: path('version', { id: version.id }),
+          title: version.title,
+          rating: version.rating,
+          secondary: secondary_html,
+          secondary_always: true,
+          meta: [
+            version.story.originArchive|archive_name,
+            { key: 'ID', value: version.story.originIdentifier },
+            { key: 'Retrieved', value: version.archivedAt|date('d/m/y H:i') }
+          ],
+          additional_style: additional_style
+        } %}
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block title %}
+  {{ app.user.login }} - feed - {{ parent() }}
+{% endblock %}

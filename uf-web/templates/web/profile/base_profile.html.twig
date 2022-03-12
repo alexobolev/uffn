@@ -1,0 +1,30 @@
+{% extends 'web/base.html.twig' %}
+
+
+{% block breadcrumbs %}
+  &rarr; <a href="{{ path('profile') }}">My profile</a>
+{% endblock %}
+
+{% block main_contents %}
+{% endblock %}
+
+
+{% block title %}
+  {{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+  {% include 'web/common/_global_topbar.html.twig' with { 'breadcrumbs': block('breadcrumbs') } %}
+  {% include 'web/profile/_user_actions.html.twig' with { 'active_key': active_nav_key } %}
+
+  <main class="uf-main">
+    <div class="container-md">
+      {{ block('main_contents') }}
+    </div>
+  </main>
+
+  {% include 'web/common/_global_footer.html.twig' %}
+
+{% endblock %}
+

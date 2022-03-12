@@ -1,13 +1,13 @@
 <?php
-
 namespace App\Repository;
 
-use App\Entity\Story;
-use App\Entity\Version;
+use App\Entity\{Story, User, Version};
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\User\UserInterface;
+
 
 /**
  * @method Version|null find($id, $lockMode = null, $lockVersion = null)
@@ -15,10 +15,8 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Version[]    findAll()
  * @method Version[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class VersionRepository extends ServiceEntityRepository
-{
-    public function __construct(ManagerRegistry $registry)
-    {
+class VersionRepository extends ServiceEntityRepository {
+    public function __construct(ManagerRegistry $registry) {
         parent::__construct($registry, Version::class);
     }
 
@@ -26,8 +24,7 @@ class VersionRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function add(Version $entity, bool $flush = true): void
-    {
+    public function add(Version $entity, bool $flush = true): void {
         $this->_em->persist($entity);
         if ($flush) {
             $this->_em->flush();
@@ -38,8 +35,7 @@ class VersionRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function remove(Version $entity, bool $flush = true): void
-    {
+    public function remove(Version $entity, bool $flush = true): void {
         $this->_em->remove($entity);
         if ($flush) {
             $this->_em->flush();
@@ -75,5 +71,20 @@ class VersionRepository extends ServiceEntityRepository
             ->setMaxResults(1);
 
         return $query->getSingleResult();
+    }
+
+    /**
+     * Get all stories visible to the user, in reverse archival order.
+     */
+    public function findVisibleInArchivalOrder(UserInterface $user) {
+        $query = $this->_em
+            ->createQuery (
+                'SELECT v
+                FROM App\Entity\Version v
+                JOIN v.story s
+                WHERE s.isPublic = true OR s.owner = :user
+                ORDER BY v.archivedAt DESC')
+            ->setParameter('user', $user);
+        return $query->getResult();
     }
 }

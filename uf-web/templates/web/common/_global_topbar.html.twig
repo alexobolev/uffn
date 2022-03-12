@@ -8,6 +8,6 @@
       <a href="/" class="uf-site-logo">uffn</a>
       <span class="d-none d-sm-inline-block">{{ breadcrumbs|raw }}</span>
     </div>
-    <a href="#">{{ app.user.login }}</a>
+    <a href="{{ path('profile') }}">{{ app.user.login }}</a>
   </div>
 </nav>

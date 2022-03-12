@@ -10,8 +10,13 @@ class StoryExtension extends AbstractExtension
 {
     public function getFilters(): array {
         return [
+            new TwigFilter('archive_name', [$this, 'makeArchiveName']),
             new TwigFilter('story_link', [$this, 'makeStoryLink']),
         ];
+    }
+
+    public function makeArchiveName(?Archive $archive): string {
+        return $archive?->value;
     }
 
     public function makeStoryLink(?Story $story): string {

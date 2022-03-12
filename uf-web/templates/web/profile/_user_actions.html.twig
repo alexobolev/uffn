@@ -1,0 +1,36 @@
+{% set nav_actions %}
+
+  {% set nav_links = [
+    { key: 'feed', text: 'Feed', path: path('profile_feed') },
+    { key: 'lists', text: 'Lists', path: '#', disabled: true },
+    { key: 'uploads', text: 'Uploads', path: '#', disabled: true },
+    { key: 'profile', text: 'Profile', path: '#', disabled: true },
+  ] %}
+
+  <div class="uf-user-actions-col-tabs">
+    <ul class="nav nav-pills uf-profile-nav" id="pills-tab" role="tablist">
+      {% for nav_link in nav_links %}
+        <li class="nav-item">
+          {% set active = nav_link.key == active_key %}
+          {% set disabled = nav_link.disabled is defined and nav_link.disabled %}
+          {% set extra_classes = '' ~ (active ? 'active' : '') ~ (disabled ? 'disabled' : '') %}
+          <a href="{{ nav_link.path }}" class="nav-link {{ extra_classes }}">{{ nav_link.text }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endset %}
+
+{% set auth_actions %}
+  <div class="uf-user-actions-col-buttons mb-3 mb-sm-0">
+    <div class="d-block d-sm-flex justify-content-sm-end">
+      <a href="{{ path('auth_logout') }}" class="btn btn-sm btn-danger mb-1 mb-sm-0 me-0 me-sm-0">Sign out</a>
+    </div>
+  </div>
+{% endset %}
+
+
+{% include 'web/common/_global_user_actions.html.twig' with {
+  'leftSide': nav_actions,
+  'rightSide': auth_actions
+} %}
