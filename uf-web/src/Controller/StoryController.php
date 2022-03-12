@@ -23,7 +23,7 @@ class StoryController extends AbstractController {
 
 
     #[Route(
-        '/story/{id}',
+        '/stories/{id}',
         name: 'story',
         requirements: ['id' => '\d+']
     )]
@@ -47,7 +47,7 @@ class StoryController extends AbstractController {
 
 
     #[Route(
-        '/story/{id}/versions',
+        '/stories/{id}/versions',
         name: 'story_versions',
         requirements: ['id' => '\d+']
     )]
@@ -89,7 +89,7 @@ class StoryController extends AbstractController {
 
 
     #[Route(
-        '/story/{id}/edit',
+        '/stories/{id}/edit',
         name: 'story_edit',
         requirements: ['id' => '\d+']
     )]

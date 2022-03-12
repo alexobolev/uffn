@@ -40,4 +40,17 @@ class UserRepository extends ServiceEntityRepository {
             $this->_em->flush();
         }
     }
+
+    public function findWithAnyOfCredentials(string $login, string $email): array {
+        $query = $this->_em
+            ->createQuery(
+                'SELECT u
+                FROM App\Entity\User u
+                WHERE u.login = :login OR u.email = :email
+                ORDER BY u.id ASC')
+            ->setParameter('login', $login)
+            ->setParameter('email', $email);
+
+        return $query->getResult();
+    }
 }
