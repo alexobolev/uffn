@@ -15,7 +15,7 @@
 
     {% if secondary is defined and secondary %}
       {% set extra_style %}
-        {% if secondary_always %}
+        {% if secondary_always is defined and secondary_always %}
           style="display: inline-block !important;"
         {% endif %}
       {% endset %}
@@ -29,9 +29,9 @@
 
       {% for item in meta %}
         {% if item is iterable %}
-          <span>{{ item.key }} {{ item.value }}</span>
+          <span>{{ item.key|raw }} {{ item.value|raw }}</span>
         {% else %}
-          <span>{{ item }}</span>
+          <span>{{ item|raw }}</span>
         {% endif %}
       {% endfor %}
 

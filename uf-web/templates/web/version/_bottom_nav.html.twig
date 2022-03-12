@@ -6,7 +6,7 @@
   {% set next_hidden = bottom_nav.next_index is null %}
   {% set next_link = path('version_chapter', { id: story.info.version_id, chapterNum: bottom_nav.next_index ?? 1 }) %}
 
-  <a href="{{ prev_link }}" class="me-1 btn btn-sm btn-secondary {% if prev_hidden %} disabled {% endif %}">&laquo; Prev. chapter</a>
-  <a href="{{ next_link }}" class="me-1 btn btn-sm btn-primary {% if next_hidden %} disabled {% endif %}">Next chapter &raquo;</a>
+  <a href="{{ prev_link }}" class="me-1 btn btn-sm btn-light {% if prev_hidden %} disabled {% endif %}">&laquo; Prev. chapter</a>
+  <a href="{{ next_link }}" class="me-1 btn btn-sm btn-secondary {% if next_hidden %} disabled {% endif %}">Next chapter &raquo;</a>
 
 </div>

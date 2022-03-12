@@ -2,10 +2,15 @@
 
 {% set metadataContents %}
   {% set dtCol = 'col-sm-3 col-lg-2' %}
-  {% set ddCol = 'col-sm-9 col-lg-10' %}
+  {% set ddCol = 'col-sm-9 col-lg-10 text-muted' %}
 
   <div class="col">
     <div class="row">
+
+      <dt class="{{ dtCol }}">Uploader:</dt>
+      <dd class="{{ ddCol }}">
+        {{ story.extra.owner.login }}
+      </dd>
 
       <dt class="{{ dtCol }}">Retrieved:</dt>
       <dd class="{{ ddCol }}">
@@ -24,11 +29,14 @@
 {% endset %}
 
 <div class="accordion mt-4 mb-1" id="{{ accordionName }}">
-  {% include 'web/version/_jumbo_accordion_item.html.twig' with {
-        'itemName': 'summary',
-        'header': 'Original summary',
-        'contents': story.original_summary|raw
-  } %}
+  {% if story.custom_summary is not null %}
+    {% include 'web/version/_jumbo_accordion_item.html.twig' with {
+          'itemName': 'summary',
+          'header': 'Original summary',
+          'contents': story.original_summary|raw
+    } %}
+  {% endif %}
+
   {% include 'web/version/_jumbo_accordion_item.html.twig' with {
         'itemName': 'metadata',
         'header': 'Metadata',

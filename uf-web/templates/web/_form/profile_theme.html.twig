@@ -1,0 +1,86 @@
+{% use 'form_div_layout.html.twig' %}
+
+{% block form_label %}
+  {% set label_attr = label_attr|merge({ class: 'col-form-label' }) %}
+  {{ parent() }}
+{% endblock %}
+
+{% block form_help %}
+  {% if help %}
+    <p class="mt-1 mb-0 text-muted small">{{ help|raw }}</p>
+  {% endif %}
+  {% if errors|length > 0 %}
+    {% for error in errors %}
+      <p class="mt-1 mb-0 text-danger small">Error: {{ error.message }}</p>
+    {% endfor %}
+  {% endif %}
+{% endblock %}
+
+{% block form_errors %}
+  {% if errors|length > 0 %}
+    {% for error in errors %}
+      <p>Error: {{ error.message }}</p>
+    {% endfor %}
+  {% endif %}
+{% endblock %}
+
+{% block form_row %}
+  {% set sep_class = 'mb-2' %}
+  {% if last_in_group is defined and last_in_group %}
+    {% set sep_class = 'mb-3 mb-sm-4' %}
+  {% endif %}
+
+  <div class="row {{ sep_class }}">
+    <div class="col-sm-4">
+      {{ form_label(form) }}
+    </div>
+    <div class="col-sm-8">
+      {{ form_widget(form) }}
+    </div>
+    <div class="col-sm-8 offset-sm-4">
+      {{ form_help(form) }}
+      {# errors are embedded in help #}
+    </div>
+  </div>
+{% endblock %}
+
+{% block button_row %}
+  <div class="row mt-2 mt-sm-5">
+    <div class="col-sm-8 offset-sm-4">
+      {{ form_widget(form) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block form_widget %}
+  {% set my_class = 'form-control' %}
+  {% if errors is defined and errors|length > 0 %}
+    {% set my_class = my_class ~ ' is-invalid' %}
+  {% endif %}
+  {% set attr = attr|merge({class: my_class}) %}
+  {{ parent() }}
+{% endblock %}
+
+{% block email_widget %}
+  {% set my_class = 'form-control' %}
+  {% if errors is defined and errors|length > 0 %}
+    {% set my_class = my_class ~ ' is-invalid' %}
+  {% endif %}
+  {% set attr = attr|merge({class: my_class}) %}
+  {{ parent() }}
+{% endblock %}
+
+{% block password_widget %}
+  {% set my_class = 'form-control' %}
+  {% if errors is defined and errors|length > 0 %}
+    {% set my_class = my_class ~ ' is-invalid' %}
+  {% endif %}
+  {% set attr = attr|merge({class: my_class}) %}
+  {{ parent() }}
+{% endblock %}
+
+{% block submit_widget %}
+  {% set my_class = 'btn btn-primary' %}
+  {% set attr = attr|merge({class: my_class}) %}
+  {{ parent() }}
+{% endblock %}

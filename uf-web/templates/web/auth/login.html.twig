@@ -27,6 +27,7 @@
                      placeholder="thestrongiestpasswordevah" class="form-control {% if error %}is-invalid{% endif %}">
               <label for="password" {% if error %}class="text-danger"{% endif %}>Password</label>
             </div>
+            <input type="hidden" name="_target_path" value="{{ path('profile') }}"/>
             <button type="submit" class="btn btn-lg mt-3 w-100 {% if not error %}btn-primary{% else %}btn-danger{% endif %}">
               {% if not error %}
                 Sign in

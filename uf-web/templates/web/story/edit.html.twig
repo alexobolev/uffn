@@ -41,7 +41,7 @@
         {% endif %}
 
         {% if form_errors(form) %}
-          <div class="mb-5">
+          <div class="mb-4 mb-sm-5">
             <div class="alert alert-danger">
               <h5 class="alert-heading">Errors</h5>
               <p class="small mb-0">{{ form_errors(form) }}</p>
@@ -49,22 +49,22 @@
           </div>
         {% endif %}
 
-        <div class="mb-4">
+        <div class="mb-3 mb-sm-4">
           {{ form_widget(form.summary, { 'attr': { 'rows': '5' }, 'label': 'Summary override' }) }}
           {{ form_help(form.summary, { 'help': 'Leave empty or spaces/tabs-only to remove the override.' }) }}
         </div>
 
-        <div class="mb-5">
+        <div class="mb-3 mb-sm-4">
           {{ form_widget(form.rating, { 'label': 'Rating override' }) }}
           {{ form_help(form.rating, { 'help': 'This hides the original rating on all of the pages except for version listing.' }) }}
         </div>
 
-        <div class="mb-5">
+        <div class="mb-4 mb-sm-5">
           {{ form_widget(form.isPublic, { 'label': 'Story is public' }) }}
           {{ form_help(form.isPublic, { 'help': 'Others see public stories and can add them to lists but can\'t modify them.' }) }}
         </div>
 
-        <div class="mt-5">
+        <div>
           {{ form_widget(form.save, { 'label': 'Save changes' }) }}
         </div>
 

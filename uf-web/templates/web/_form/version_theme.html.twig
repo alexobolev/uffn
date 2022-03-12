@@ -1,7 +1,11 @@
 {% use 'form_div_layout.html.twig' %}
 
 {% block form_label %}
-  {% set label_attr = label_attr|merge({ class: 'form-label' }) %}
+  {% if label_attr is defined and label_attr %}
+    {% if label_attr.class is not defined or not label_attr.class %}
+      {% set label_attr = label_attr|merge({ class: 'form-label' }) %}
+    {% endif %}
+  {% endif %}
   {{ parent() }}
 {% endblock %}
 
@@ -32,12 +36,12 @@
 
 {% block checkbox_widget %}
   {% set my_class = 'form-check-input d-inline-block' %}
-  {% set my_style = 'margin-top: .3em' %}
+  {% set my_style = '' %}
   {% set attr = attr|merge({class: my_class}) %}
   {% set attr = attr|merge({style: my_style}) %}
   <div class="form-check">
     {{ parent() }}
-    {{ form_label(form, label, { 'label_attr': { 'class': 'form-check-label ms-1' } }) }}
+    {{ form_label(form, label, { label_attr: { 'class': 'form-check-label ms-1' } }) }}
   </div>
 {% endblock %}
 

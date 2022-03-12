@@ -18,37 +18,54 @@
 
 {% set main_contents %}
   <div>
-    <h3 class="py-3 pt-sm-4 pb-sm-5">Archived versions <span class="badge rounded-pill bg-secondary ms-2 ms-sm-4">{{ versions|length }}</span></h3>
+
+    <h3 class="py-3 pt-sm-4 pb-sm-5">
+      Archived versions
+      <span class="badge rounded-pill bg-secondary ms-2 ms-sm-4">{{ versions|length }}</span>
+    </h3>
+
     {% for version in versions %}
 
-      {% set version_link = path('version', { 'id': version.id }) %}
+      {% set chapter_count = version.chapters|length == 1
+          ? 'a single chapter'
+          : (version.chapters|length ~ ' chapter(s)')
+      %}
 
-      <section class="uf-list-entry">
-        <header>
-          <span class="rating {{ version.rating|rating_class }}">{{ version.rating|rating_name }}</span>
-          <a href="{{ version_link }}" class="mx-2">{{ version.title }}</a>
-          <span class="secondary">at {{ version.archivedAt|date('d/m/Y H:i:s') }}</span>
-        </header>
-        <div class="meta py-1">
-          {% set ch_count = version.chapters|length %}
-          {% set ch_count_text = ch_count == 1 ? 'a single chapter' : (ch_count ~ ' chapter(s)') %}
-          {% set ch_updated_text = version.isCompleted ? 'completed' : 'updated' %}
+      {% set updated %}
+        {{ (version.isCompleted ? 'completed' : 'updated') }}
+        {{ version.updatedAt|date('d/m/Y') }}
+      {% endset %}
 
-          <span>{{ ch_count_text }}</span>
-          <span>{{ ch_updated_text }} {{ version.updatedAt|date('d/m/Y') }}</span>
+      {% set archived %}
+        <span class="d-inline-block d-sm-none">
+          archived {{ version.archivedAt|date('d/m/Y') }}
+        </span>
+      {% endset %}
 
-          <span class="d-inline-block d-sm-none">archived {{ version.archivedAt|date('d/m/y H:i') }}</span>
-        </div>
-        {# TODO: truncate html properly, this leaves open tags #}
-        <div class="text d-block d-sm-none">
+      {% set chapter_desc %}
+        <div class="d-block d-sm-none">
           {{ version.summary|raw|u.truncate(120, ' ...', false)|raw }}
         </div>
-        <div class="text d-none d-sm-block">
+        <div class="d-none d-sm-block">
           {{ version.summary|raw|u.truncate(240, ' ...', false)|raw }}
         </div>
-      </section>
+      {% endset %}
+
+      {% include 'web/common/_shared_list_entry.html.twig' with {
+        link: path('version', { id: version.id }),
+        title: version.title,
+        rating: version.rating,
+        secondary: '@ ' ~ version.archivedAt|date('d/m/Y H:i:s'),
+        desc: chapter_desc|raw,
+        meta: [
+          chapter_count,
+          updated,
+          archived,
+        ]
+      } %}
 
     {% endfor %}
+
   </div>
 {% endset %}
 

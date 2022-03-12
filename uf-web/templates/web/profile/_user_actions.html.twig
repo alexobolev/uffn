@@ -4,7 +4,7 @@
     { key: 'feed', text: 'Feed', path: path('profile_feed') },
     { key: 'lists', text: 'Lists', path: '#', disabled: true },
     { key: 'uploads', text: 'Uploads', path: '#', disabled: true },
-    { key: 'profile', text: 'Profile', path: '#', disabled: true },
+    { key: 'settings', text: 'Settings', path: path('profile_settings') }
   ] %}
 
   <div class="uf-user-actions-col-tabs">
@@ -14,7 +14,7 @@
           {% set active = nav_link.key == active_key %}
           {% set disabled = nav_link.disabled is defined and nav_link.disabled %}
           {% set extra_classes = '' ~ (active ? 'active' : '') ~ (disabled ? 'disabled' : '') %}
-          <a href="{{ nav_link.path }}" class="nav-link {{ extra_classes }}">{{ nav_link.text }}</a>
+          <a href="{{ nav_link.path }}" class="nav-link {{ extra_classes }}">{{ nav_link.text|raw }}</a>
         </li>
       {% endfor %}
     </ul>

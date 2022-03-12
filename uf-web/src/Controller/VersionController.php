@@ -71,6 +71,7 @@ class VersionController extends AbstractController {
                 'custom_summary' => $story->getSummary(),
                 'original_summary' => $version->getSummary(),
                 'extra' => [
+                    'owner' => $story->getOwner(),
                     'retrieved_on' => $version->getArchivedAt()->format('d/m/Y H:i:s'),
                     'link' => sprintf('https://archiveofourown.org/works/%d', $story->getOriginIdentifier())
                 ]
