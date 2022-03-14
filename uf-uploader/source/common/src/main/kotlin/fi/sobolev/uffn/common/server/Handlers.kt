@@ -68,12 +68,6 @@ fun handleUploadCreate(ctrl: UploadController, ctx: WsContext, req: UploadCreate
         response.addCreated(newUpload)
     }
 
-    // debug
-    response.created.forEach { entry ->
-        logger.warn { "created upload with uuid = ${entry.guid}" }
-    }
-    // end debug
-
     ctrl.sendTo(user, payload = response)
 }
 

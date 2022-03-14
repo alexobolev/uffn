@@ -31,11 +31,13 @@
   </div>
 {% endfor %}
 
-<div class="row mt-3 mt-sm-4">
-  <div class="col">
-    {% set kill_all_path = path('profile_settings_kill_all_sessions') %}
-    {% set kill_stale_path = path('profile_settings_kill_stale_sessions') %}
-    <a class="btn btn-danger me-1 mb-1 mb-sm-0" href="{{ kill_all_path }}">Terminate all</a>
-    <a class="btn btn-secondary me-1 mb-1 mb-sm-0" href="{{ kill_stale_path }}">Terminate stale</a>
+{% if sessions|length > 0 %}
+  <div class="row mt-3 mt-sm-4">
+    <div class="col">
+      {% set kill_all_path = path('profile_settings_kill_all_sessions') %}
+      {% set kill_stale_path = path('profile_settings_kill_stale_sessions') %}
+      <a class="btn btn-danger me-1 mb-1 mb-sm-0" href="{{ kill_all_path }}">Terminate all</a>
+      <a class="btn btn-secondary me-1 mb-1 mb-sm-0" href="{{ kill_stale_path }}">Terminate stale</a>
+    </div>
   </div>
-</div>
+{% endif %}

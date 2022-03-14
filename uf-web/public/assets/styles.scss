@@ -433,10 +433,10 @@ a {
     &.fetching,
     &.parsing,
     &.storing {
-      $border-color: $info;
+      $accent-color: $info;
       $backlight-color: $blue-100;
 
-      border-left-color: $border-color;
+      border-left-color: $accent-color;
 
       & > .digest {
         animation: $progress-bar-animation-timing progress-bar-stripes;
@@ -444,7 +444,7 @@ a {
         @include gradient-striped();
 
         .badge {
-          @extend .bg-info;
+          background-color: $accent-color;
         }
       }
 
@@ -454,12 +454,22 @@ a {
       }
     }
 
-    &.success {
-      //border-left-color: rgba($success, 0.1);
-      &:hover { border-left-color: $success; }
-      & > .digest .badge { @extend .bg-success; }
+    &.completed {
+      $accent-color: $green;
+      $backlight-color: $green-100;
+
+      border-left-color: $accent-color;
+
+      & > .digest {
+        background-color: lighten($backlight-color, 10%);
+        .badge { background-color: $accent-color; }
+      }
+      &:hover > .digest {
+        background-color: lighten($backlight-color, 7.5%);
+      }
     }
-    &.error {
+
+    &.errored {
       $border-color: $danger;
       $backlight-color: $red-100;
 

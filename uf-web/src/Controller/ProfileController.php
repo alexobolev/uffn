@@ -67,7 +67,7 @@ class ProfileController extends AbstractController {
 
             $utc = new \DateTimeZone('UTC');
             $currentTimestamp = new \DateTime('now', timezone: $utc);
-            $expiryTimestamp = new \DateTime('+5 minutes', timezone: $utc);
+            $expiryTimestamp = new \DateTime('+15 minutes', timezone: $utc);
 
             $uploadSession = (new UploadSession())
                 ->setOwner($user)

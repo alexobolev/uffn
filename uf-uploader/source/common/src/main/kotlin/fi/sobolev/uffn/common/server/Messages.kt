@@ -94,16 +94,10 @@ class UploadCreatedResponse (
     override val code: String get() = "upload.created"
 
     fun addCreated(upload: Upload) {
-        val entry = UploadEntry (
-            guid = upload.guid,
-            url = StoryUrl.make(upload.archive, upload.identifier),
-            origin = UploadEntry.Origin(upload.archive, upload.identifier),
-            status = upload.status,
-            title = upload.title,
-            timestamp = upload.startedAt
-        )
+        val entry = UploadEntry(entity = upload)
         created.add(entry)
     }
+
     fun addFailed(url: String, reason: String) {
         val entry = UploadFailedEntry(url, reason)
         failed.add(entry)
@@ -164,8 +158,8 @@ data class UploadEntry (
     val guid: UUID,
     val url: String,
     val origin: Origin,
-    val status: UploadStatus,
-    val title: String?,
+    val status: Status,
+    val niceTitle: String?,
     @Serializable(with = InstantSerializer::class)
     val timestamp: Instant
 ) {
@@ -173,8 +167,8 @@ data class UploadEntry (
         guid = entity.guid,
         url = StoryUrl.make(entity.archive, entity.identifier),
         origin = Origin(entity.archive, entity.identifier),
-        status = entity.status,
-        title = entity.title,
+        status = Status(entity.status, entity.errorType, entity.errorDesc),
+        niceTitle = entity.title,
         timestamp = entity.startedAt
     )
 
@@ -182,6 +176,13 @@ data class UploadEntry (
     data class Origin (
         val archive: Archive,
         val ident: String
+    )
+
+    @Serializable
+    data class Status (
+        val code: UploadStatus,
+        val type: UploadError?,
+        val extra: String?
     )
 }
 
