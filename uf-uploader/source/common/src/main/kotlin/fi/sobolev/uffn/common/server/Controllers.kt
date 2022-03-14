@@ -1,8 +1,8 @@
 package fi.sobolev.uffn.common.server
 
 import fi.sobolev.uffn.common.data.User
+import fi.sobolev.uffn.common.services.ISessionService
 import fi.sobolev.uffn.common.services.IUploadService
-import fi.sobolev.uffn.common.services.IUserService
 import io.javalin.websocket.WsContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
@@ -51,9 +51,9 @@ abstract class BaseController (
 
 class AuthController (
     sessions: SessionRegistry,
-    val users: IUserService
+    val uploadSessionService: ISessionService,
+    val uploadService: IUploadService
 ) : BaseController(sessions) {
-
     override fun before(ctx: WsContext, payload: JsonElement): Boolean {
         return true
     }

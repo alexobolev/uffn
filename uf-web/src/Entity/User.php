@@ -2,6 +2,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -58,6 +60,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     )]
     private ?bool $isAdmin;
 
+    #[ORM\OneToMany(
+        mappedBy: 'owner',
+        targetEntity: UploadSession::class,
+        orphanRemoval: true
+    )]
+    private $uploadSessions;
+
+
+    public function __construct() {
+        $this->uploadSessions = new ArrayCollection();
+    }
+
 
     public function getId(): ?int {
         return $this->id;
@@ -108,6 +122,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
         return $this;
     }
 
+    /**
+     * @return Collection<int, UploadSession>
+     */
+    public function getUploadSessions(): Collection {
+        return $this->uploadSessions;
+    }
+
+    public function addUploadSession(UploadSession $uploadSession): self {
+        if (!$this->uploadSessions->contains($uploadSession)) {
+            $this->uploadSessions[] = $uploadSession;
+            $uploadSession->setOwner($this);
+        }
+        return $this;
+    }
+
+    public function removeUploadSession(UploadSession $uploadSession): self {
+        if ($this->uploadSessions->removeElement($uploadSession)) {
+            // set the owning side to null (unless already changed)
+            if ($uploadSession->getOwner() === $this) {
+                $uploadSession->setOwner(null);
+            }
+        }
+        return $this;
+    }
+
     /// Authentication-related stuff.
     /// ========================================
 
@@ -135,5 +174,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     public function eraseCredentials() {
         // ...
     }
-
 }

@@ -31,13 +31,13 @@
   {% endif %}
 
   <div class="row {{ sep_class }}">
-    <div class="col-sm-4">
+    <div class="col-sm-4 col-lg-3">
       {{ form_label(form) }}
     </div>
-    <div class="col-sm-8">
+    <div class="col-sm-8 col-lg-5">
       {{ form_widget(form) }}
     </div>
-    <div class="col-sm-8 offset-sm-4">
+    <div class="col-sm-8 col-lg-5 offset-sm-4 offset-lg-3">
       {{ form_help(form) }}
       {# errors are embedded in help #}
     </div>
@@ -45,8 +45,8 @@
 {% endblock %}
 
 {% block button_row %}
-  <div class="row mt-2 mt-sm-5">
-    <div class="col-sm-8 offset-sm-4">
+  <div class="row mt-2 mt-sm-4">
+    <div class="col-sm-8 col-lg-5 offset-sm-4 offset-lg-3">
       {{ form_widget(form) }}
     </div>
   </div>

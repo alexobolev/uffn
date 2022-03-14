@@ -14,18 +14,32 @@ private val uuidPattern = """^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a
 
 
 fun handleAuthLogin(ctrl: AuthController, ctx: WsContext, req: AuthLoginRequest) {
-    if (req.user == 1 && req.key == "TESTTESTTEST") {
-        val user = ctrl.users.findOneOrNull(id = req.user)
-        if (user == null) {
-            ctx.sendPayload(ErrorResponse("failed to authenticate test/dev connection"))
-            return
-        }
-        logger.info { "authenticated user ${user.login} (${user.email}) with test credentials" }
-        runBlocking { ctrl.sessions.addContext(ctx, user) }
-        ctx.sendPayload(AuthLoginSucceededResponse())
+    val remoteHost = ctx.session.remoteAddress.hostString
+    val (user, active) = ctrl.uploadSessionService.findKey(req.key)
+
+    if (user == null) {
+        logger.error { "failed to authenticate request from $remoteHost because key was invalid" }
+        ctx.sendPayload(AuthLoginFailedResponse("invalid session key"))
         return
     }
-    ctx.sendPayload(AuthLoginFailedResponse("test credentials not accepted"))
+
+    if (!active) {
+        logger.error { "failed to authenticate request from $remoteHost because session expired" }
+        ctx.sendPayload(AuthLoginFailedResponse("session expired"))
+        return
+    }
+
+    logger.info { "authenticated request from $remoteHost" }
+    runBlocking { ctrl.sessions.addContext(ctx, user) }
+
+    val response = AuthLoginSucceededResponse (
+        uploads = ctrl.uploadService
+            .findAllFor(owner = user)
+            .map { UploadEntry(entity = it) }
+            .toMutableList()
+    )
+
+    ctx.sendPayload(response)
 }
 
 fun handleUploadCreate(ctrl: UploadController, ctx: WsContext, req: UploadCreateRequest) {
@@ -86,25 +100,4 @@ fun handleUploadRemove(ctrl: UploadController, ctx: WsContext, req: UploadRemove
     }
 
     ctrl.sendTo(user, payload = response)
-}
-
-fun handleUploadGetLogs(ctrl: UploadController, ctx: WsContext, req: UploadGetLogsRequest) {
-    val user = runBlocking { ctrl.sessions.getUser(ctx) }
-    if (user == null) {
-        ctx.sendPayload(ErrorResponse("failed to map session to user"))
-        return
-    }
-
-    val upload = ctrl.uploads.findOneFor(owner = user, req.guid)
-    if (upload == null) {
-        ctx.sendPayload(ErrorResponse("failed to find upload by this guid"))
-        return
-    }
-
-    val logs = ctrl.uploads.getLogs(upload.guid)
-
-    val response = UploadInfoResponse()
-    response.addUpload(upload, logs)
-
-    ctx.sendPayload(response)
 }

@@ -1,0 +1,57 @@
+{% extends 'web/profile/base_profile.html.twig' %}
+{% set active_nav_key = 'uploads' %}
+
+
+{% block breadcrumbs %}
+  {{ parent() }}
+  &rarr; <a href="{{ path('profile_uploads') }}">Uploads</a>
+{% endblock %}
+
+{% block main_contents %}
+
+  {% if app.debug %}
+    <section class="row my-3 my-sm-5">
+      <div class="col col-12 col-lg-8">
+        <div class="alert alert-danger" role="alert" style="word-break: break-all;">
+          <span>Debug stuff</span> - <em>{{ debug.sess_key }}</em>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="row mb-5">
+    <h3 class="my-3 mt-sm-4">Upload a story</h3>
+    <div class="text-muted small mb-sm-2">
+      <p>You can only paste one supported link at a time; use server CLI for batch uploads.</p>
+    </div>
+    <div class="col col-12 col-lg-8">
+      <div class="input-group">
+        <input type="url" class="form-control" placeholder="Story or chapter link"
+               aria-label="Story or chapter URL" aria-describedby="uf-add-story">
+        <button type="button" class="btn btn-primary" id="uf-add-story">
+          <span class="d-sm-none">Upload</span>
+          <span class="d-none d-sm-inline">Upload story</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="row mb-5">
+    <h3 class="my-3 mt-sm-4">Current uploads</h3>
+    <div class="text-muted small mb-sm-4">
+      <p>Uploads are processed sequentially to avoid overloading the source archives' servers.</p>
+    </div>
+  </section>
+
+  <section class="row mb-5">
+    <h3 class="my-3 mt-sm-4">Past uploads</h3>
+    <div class="text-muted small mb-sm-4">
+      <p>Log of successful uploads is cleaned up automatically after a while.</p>
+    </div>
+  </section>
+
+{% endblock %}
+
+{% block title %}
+  {{ app.user.login }} - current uploads - {{ parent() }}
+{% endblock %}

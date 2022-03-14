@@ -53,14 +53,15 @@ class ErrorResponse (
 
 @Serializable
 class AuthLoginRequest (
-    val user: Int,
     val key: String
 ) : ClientPayload {
     override val code: String get() = "auth.login"
 }
 
 @Serializable
-class AuthLoginSucceededResponse : ServerPayload {
+class AuthLoginSucceededResponse (
+    val uploads: MutableList<UploadEntry> = mutableListOf()
+) : ServerPayload {
     override val code: String get() = "auth.login-succeeded"
 }
 
@@ -99,8 +100,7 @@ class UploadCreatedResponse (
             origin = UploadEntry.Origin(upload.archive, upload.identifier),
             status = upload.status,
             title = upload.title,
-            timestamp = upload.startedAt,
-            logs = listOf()
+            timestamp = upload.startedAt
         )
         created.add(entry)
     }
@@ -148,37 +148,10 @@ class UploadRemovedResponse (
 
 
 @Serializable
-class UploadGetLogsRequest (
-    @Serializable(with = UUIDSerializer::class)
-    val guid: UUID
-) : ClientPayload {
-    override val code: String get() = "upload.get-logs"
-}
-
-@Serializable
 class UploadInfoResponse (
     val uploads: MutableList<UploadEntry> = mutableListOf()
 ) : ServerPayload {
     override val code: String get() = "upload.info"
-
-    fun addUpload(upload: Upload, logs: List<UploadLog>) {
-        val entry = UploadEntry (
-            guid = upload.guid,
-            url = StoryUrl.make(upload.archive, upload.identifier),
-            origin = UploadEntry.Origin(upload.archive, upload.identifier),
-            status = upload.status,
-            title = upload.title,
-            timestamp = upload.startedAt,
-            logs = logs.map {
-                UploadEntry.LogEntry (
-                    time = it.time,
-                    level = it.level,
-                    message = it.message
-                )
-            }
-        )
-        uploads.add(entry)
-    }
 }
 
 
@@ -194,21 +167,21 @@ data class UploadEntry (
     val status: UploadStatus,
     val title: String?,
     @Serializable(with = InstantSerializer::class)
-    val timestamp: Instant,
-    val logs: List<LogEntry>
+    val timestamp: Instant
 ) {
+    constructor(entity: Upload) : this (
+        guid = entity.guid,
+        url = StoryUrl.make(entity.archive, entity.identifier),
+        origin = Origin(entity.archive, entity.identifier),
+        status = entity.status,
+        title = entity.title,
+        timestamp = entity.startedAt
+    )
+
     @Serializable
     data class Origin (
         val archive: Archive,
         val ident: String
-    )
-
-    @Serializable
-    data class LogEntry (
-        @Serializable(with = InstantSerializer::class)
-        val time: Instant,
-        val level: LogLevel,
-        val message: String
     )
 }
 

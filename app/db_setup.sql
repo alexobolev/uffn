@@ -14,10 +14,6 @@ CREATE TYPE UFFN_UPLOAD_ERROR AS ENUM (
     'PAGE_UNAVAILABLE', 'STORY_INACCESSIBLE', 'MARKUP_UNEXPECTED', 'ERROR_FREEFORM'
 );
 
-CREATE TYPE UFFN_LOG_LEVEL AS ENUM (
-    'DEBUG', 'INFO', 'WARN', 'ERROR'
-);
-
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -64,6 +60,7 @@ CREATE TABLE story_versions (
     summary TEXT,
     notes_pre TEXT,
     notes_post TEXT,
+    word_count INT,
     published_at TIMESTAMP,
     updated_at TIMESTAMP,
     is_completed BOOL DEFAULT FALSE,
@@ -170,15 +167,20 @@ CREATE UNIQUE INDEX uploads_concurrent_user
     WHERE (status < 'COMPLETED');
 
 
-CREATE TABLE upload_logs (
+CREATE TABLE upload_sessions (
     id SERIAL PRIMARY KEY,
-    upload_guid UUID NOT NULL,  -- references uploads (guid)
-    time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    level UFFN_LOG_LEVEL NOT NULL,
-    message VARCHAR NOT NULL,
+    owner_id INT NOT NULL,  -- references users (id)
+    auth_key VARCHAR NOT NULL UNIQUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    user_agent VARCHAR,
+    user_address VARCHAR,
 
-    CONSTRAINT fk_upload
-        FOREIGN KEY (upload_guid)
-            REFERENCES uploads (guid)
-        ON DELETE CASCADE
+    CONSTRAINT fk_owner
+        FOREIGN KEY (owner_id)
+            REFERENCES users (id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_expires
+        CHECK (created_at < expires_at)
 );

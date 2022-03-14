@@ -11,9 +11,9 @@ import redis.clients.jedis.JedisPool
 
 
 interface IUploadService {
+    fun findAllFor(owner: User): List<Upload>
     fun findOne(guid: UUID): Upload?
     fun findOneFor(owner: User, guid: UUID): Upload?
-    fun getLogs(guid: UUID): List<UploadLog>
     fun existsFor(owner: User, guid: UUID): Boolean
     fun createFor(owner: User, archive: Archive, identifier: String): Pair<Upload?, String>
     fun deleteFor(owner: User, guid: UUID): Pair<Boolean, String>
@@ -24,6 +24,12 @@ class LocalUploadService (
     private val db: Database,
     private val redis: JedisPool
 ) : IUploadService {
+    override fun findAllFor(owner: User): List<Upload> {
+        return db.sequenceOf(Uploads)
+            .filter { it.ownerId eq owner.id }
+            .toList()
+    }
+
     override fun findOne(guid: UUID): Upload? {
         return db.sequenceOf(Uploads).firstOrNull { it.guid eq guid }
     }
@@ -32,13 +38,6 @@ class LocalUploadService (
         return db.sequenceOf(Uploads).firstOrNull {
             (it.guid eq guid) and (it.ownerId eq owner.id)
         }
-    }
-
-    override fun getLogs(guid: UUID): List<UploadLog> {
-        return db.sequenceOf(UploadLogs)
-            .filter { it.uploadGuid eq guid }
-            .sortedBy { it.time }
-            .toList()
     }
 
     override fun existsFor(owner: User, guid: UUID): Boolean {

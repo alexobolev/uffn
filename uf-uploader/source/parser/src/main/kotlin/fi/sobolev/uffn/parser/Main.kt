@@ -7,6 +7,7 @@ import fi.sobolev.uffn.common.origins.ao3.AO3Parser
 import fi.sobolev.uffn.common.origins.ao3.toCommon
 import fi.sobolev.uffn.common.server.*
 import fi.sobolev.uffn.common.services.*
+import io.javalin.core.util.RouteOverviewUtil.metaInfo
 
 import java.time.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -143,6 +144,7 @@ fun startRedisListener(config: Config.RedisConfig) {
                             this.summary = ao3.summary
                             this.notesPre = ao3.notesPre
                             this.notesPost = ao3.notesPost
+                            this.wordCount = ao3.stats.wordCount.toInt()
                             this.publishedAt = ao3.stats.publishedAt.atStartOfDay().toInstant(ZoneOffset.UTC)
                             this.updatedAt = ao3.stats.updatedAt.atStartOfDay().toInstant(ZoneOffset.UTC)
                             this.isCompleted = ao3.complete

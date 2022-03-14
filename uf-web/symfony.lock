@@ -80,8 +80,14 @@
     "laminas/laminas-code": {
         "version": "4.5.1"
     },
+    "matomo/device-detector": {
+        "version": "5.0.5"
+    },
     "monolog/monolog": {
         "version": "2.3.5"
+    },
+    "mustangostang/spyc": {
+        "version": "0.6.3"
     },
     "nikic/php-parser": {
         "version": "v4.13.2"

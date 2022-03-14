@@ -80,6 +80,13 @@ class Version
     private ?string $notesPost;
 
     #[ORM\Column(
+        name: 'word_count',
+        type: 'integer',
+        nullable: true
+    )]
+    private ?int $wordCount;
+
+    #[ORM\Column(
         name: 'published_at',
         type: 'datetime',
         nullable: true
@@ -195,6 +202,15 @@ class Version
 
     public function setNotesPost(string $notesPost): self {
         $this->notesPost = $notesPost;
+        return $this;
+    }
+
+    public function getWordCount(): ?int {
+        return $this->wordCount;
+    }
+
+    public function setWordCount(int $wordCount): self {
+        $this->wordCount = $wordCount;
         return $this;
     }
 

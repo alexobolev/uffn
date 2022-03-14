@@ -58,12 +58,13 @@ fun main(args: Array<String>) {
 
 fun makeControllers(): Map<String, BaseController> {
     val uploadService = LocalUploadService(gDbConn, gRedisConn)
-    val userService = LocalUserService(gDbConn)
+    val sessionService = LocalSessionService(gDbConn)
 
     // handles all login-logout logic
     val authController = AuthController (
         sessions = sessionRegistry,
-        users = userService
+        uploadSessionService = sessionService,
+        uploadService = uploadService
     ).apply {
         register("login", ::handleAuthLogin)
     }
@@ -75,7 +76,6 @@ fun makeControllers(): Map<String, BaseController> {
     ).apply {
         register("create", ::handleUploadCreate)
         register("remove", ::handleUploadRemove)
-        register("get-logs", ::handleUploadGetLogs)
     }
 
     return mapOf (
@@ -116,8 +116,9 @@ fun startRedisListener(config: Config.RedisConfig) {
                         continue
                     }
 
-                    val notification = UploadInfoResponse()
-                    notification.addUpload(upload, logs = uploadService.getLogs(uuid))
+                    val notification = UploadInfoResponse().apply {
+                        uploads.add(UploadEntry(entity = upload))
+                    }
 
                     runBlocking {
                         sessionRegistry.forUser(upload.owner) {

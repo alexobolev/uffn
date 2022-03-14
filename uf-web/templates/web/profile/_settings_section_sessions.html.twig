@@ -1,0 +1,41 @@
+{% if sessions|length < 1 %}
+  <div class="row mb-2">
+    <div class="col-lg-8">
+      <div class="card bg-light">
+        <div class="card-body font-monospace">
+          <h6 class="card-title small fw-bold">Wow, such empty!</h6>
+          <p class="card-subtitle text-muted small my-0 py-0">Looks like no sessions were found.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% for session in sessions %}
+  <div class="row mb-2">
+    <div class="col-lg-8">
+      <div class="card" style="{% if session.stale %}border-color: var(--bs-danger); color: var(--bs-danger);{% endif %}">
+        <div class="card-body font-monospace">
+          <h6 class="card-title small fw-bold">
+            <span>{{ session.ip }}</span> &rarr; <span>{{ session.expires|date('d/m/Y H:i:s') }}</span>
+          </h6>
+          <p class="card-subtitle text-muted small my-0 py-0" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            SHA256: {{ session.key }}
+          </p>
+          <p class="card-text small my-0 py-0" style="color: var(--bs-primary); line-height: 1.2;">
+            USER-AGENT: {{ session.ua }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+<div class="row mt-3 mt-sm-4">
+  <div class="col">
+    {% set kill_all_path = path('profile_settings_kill_all_sessions') %}
+    {% set kill_stale_path = path('profile_settings_kill_stale_sessions') %}
+    <a class="btn btn-danger me-1 mb-1 mb-sm-0" href="{{ kill_all_path }}">Terminate all</a>
+    <a class="btn btn-secondary me-1 mb-1 mb-sm-0" href="{{ kill_stale_path }}">Terminate stale</a>
+  </div>
+</div>

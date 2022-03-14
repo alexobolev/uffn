@@ -11,59 +11,26 @@
 
   <section class="row d-sm-none mb-4">
     <h3 class="my-3 mt-sm-4 mb-sm-5">User actions</h3>
-    <div class="col col-12 col-sm-10 col-lg-8">
+    <div class="col">
       <a href="{{ path('auth_logout') }}" class="btn btn-danger w-100">Sign out</a>
     </div>
   </section>
 
-  <section class="row mb-4">
+  <section class="row mb-5">
     <h3 class="my-3 mt-sm-4 mb-sm-5">Authentication info</h3>
-    <div class="col col-12 col-sm-10 col-lg-8">
+    <div class="col">
+      {% include 'web/profile/_settings_section_password.html.twig' %}
+    </div>
+  </section>
 
-      {% form_theme pwd_form 'web/_form/profile_theme.html.twig' %}
-      {{ form_start(pwd_form) }}
-
-      {% if form_errors(pwd_form)|trim %}
-        <div class="row">
-          <div class="col-sm-8 offset-sm-4">
-            <div class="alert alert-danger">
-              <p><strong>Error:</strong></p>
-              {{ form_errors(pwd_form) }}
-            </div>
-          </div>
-        </div>
-      {% endif %}
-
-      {{ form_row(pwd_form.email, {
-          label: 'Email'
-      }) }}
-      {{ form_row(pwd_form.login, {
-          label: 'Login',
-          help: 'Email and login cannot be changed using the web interface.',
-          last_in_group: true
-      }) }}
-
-      {{ form_row(pwd_form.old_password, {
-          label: 'Current password',
-          attr: { placeholder: 'Enter your active password' }
-      }) }}
-      {{ form_row(pwd_form.new_password.first, {
-          label: 'New password',
-          attr: { placeholder: 'Enter the password you\'d like to have' }
-      }) }}
-      {{ form_row(pwd_form.new_password.second, {
-          label: 'New password (repeat)',
-          attr: { placeholder: 'Repeat the password you\'d like to have' },
-          help: 'New password should be 6-60 characters long.',
-          last_in_group: true
-      }) }}
-
-      {{ form_row(pwd_form.update, {
-          label: 'Change password'
-      }) }}
-
-      {{ form_end(pwd_form) }}
-
+  <section class="row mb-5">
+    <h3 class="my-3 mt-sm-4">Uploader sessions</h3>
+    <div class="text-muted small mb-sm-4">
+      <p class="mb-0">Sessions used for uploading stories are separate from user sessions.</p>
+      <p>Normally they are cleaned up automatically, but you can use this page to force a manual refresh.</p>
+    </div>
+    <div class="col">
+      {% include 'web/profile/_settings_section_sessions.html.twig' %}
     </div>
   </section>
 

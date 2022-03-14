@@ -15,6 +15,7 @@ interface Version : Entity<Version> {
     var summary: String?
     var notesPre: String?
     var notesPost: String?
+    var wordCount: Int?
     var publishedAt: Instant?
     var updatedAt: Instant?
     var isCompleted: Boolean?
@@ -30,6 +31,7 @@ object Versions : Table<Version>("story_versions") {
     val summary = text("summary").bindTo { it.summary }
     val notesPre = text("notes_pre").bindTo { it.notesPre }
     val notesPost = text("notes_post").bindTo { it.notesPost }
+    val wordCount = int("word_count").bindTo { it.wordCount }
     val publishedAt = timestamp("published_at").bindTo { it.publishedAt }
     val updatedAt = timestamp("updated_at").bindTo { it.updatedAt }
     val isCompleted = boolean("is_completed").bindTo { it.isCompleted }
