@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.properties.Delegates
 
 
 /**
@@ -60,6 +61,10 @@ data class AO3WorkMeta (
             stats.hitCount = hitCount
         }
         return this
+    }
+
+    fun isSingleChapter(): Boolean {
+        return chaptersDone == chaptersPlanned && chaptersDone == 1L;
     }
 }
 
@@ -122,6 +127,8 @@ class AO3StoryPage (
 
     private lateinit var statBlock: Element
 
+    private lateinit var cachedInfo: AO3WorkInfo
+    private lateinit var cachedMeta: AO3WorkMeta
 
     companion object {
         private val chapterLinkRegex = """^/works/(\d+)/chapters/(\d+)$""".toRegex()
@@ -171,6 +178,7 @@ class AO3StoryPage (
                 ?: (chaptersDone == chaptersPlanned && chaptersDone == 1L)
         }
 
+        cachedMeta = meta
         return meta
     }
     fun getWorkInfo(): AO3WorkInfo {
@@ -191,6 +199,7 @@ class AO3StoryPage (
             ?.let { PrefaceGroup.parseFrom(it) }
             ?.let { info.afterword = it.notes?.html() }
 
+        cachedInfo = info
         return info
     }
     fun getChapters(): List<AO3ChapterData> {
@@ -199,6 +208,26 @@ class AO3StoryPage (
                 it.selectFirst("h3#work.landmark.heading")?.remove()
                 it.select("p").removeIf { paragraph -> paragraph.text().isBlank() }
             }
+        }
+
+//        check(::cachedInfo.isInitialized)
+        check(::cachedMeta.isInitialized)
+
+        // single chapter (1/1 in meta) doesn't have summary/notes of its own,
+        // and the global #chapters[role="article"] contains the text directly in a userstuff block
+        if (cachedMeta.isSingleChapter()) {
+            val contents = chapBlock.selectFirst("div.userstuff")?.let { article ->
+                return@let article.let(cleanupContents).html()
+            } ?: throw Exception("can't find single-chapter content")
+
+            return listOf(AO3ChapterData (
+                id = 0,
+                title = null,
+                summary = null,
+                preface = null,
+                afterword = null,
+                contents = contents
+            ))
         }
 
         return chapBlock.children().mapIndexed { index, element ->

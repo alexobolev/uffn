@@ -67,6 +67,7 @@ class LocalUploadService (
             it.status = UploadStatus.PENDING
         }.also {
             uploads.add(it)
+            it.flushChanges()
         }
 
         val justCreated = uploads.find { it.guid eq upload.guid }
