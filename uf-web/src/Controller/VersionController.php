@@ -65,6 +65,7 @@ class VersionController extends AbstractController {
                 ],
                 'meta' => [
                     'rating' => $rating,
+                    'word_count' => $version->getWordCount(),
                     'chapter_count' => count($chapters),
                     'is_complete' => $version->getIsCompleted(),
                 ],

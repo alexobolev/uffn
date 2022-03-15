@@ -13,6 +13,7 @@
     </span>
     <span class="ms-4 uf-story-meta">
     {% block chapterMeta %}
+      Words: <span>{{ story.meta.word_count|number_format(0, '.', ',') }}</span>
       Chapters: <span>{{ story.meta.chapter_count }}</span>
       {% if story.meta.is_complete %}Completed{% endif %}
     {% endblock %}

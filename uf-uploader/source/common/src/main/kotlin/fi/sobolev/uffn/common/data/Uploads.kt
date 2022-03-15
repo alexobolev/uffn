@@ -13,6 +13,7 @@ interface Upload : Entity<Upload> {
     var identifier: String
     var startedAt: Instant
     var title: String?
+    var assocVersion: Version?
     var status: UploadStatus
     var errorType: UploadError?
     var errorDesc: String?
@@ -26,6 +27,7 @@ object Uploads : Table<Upload>("uploads") {
     val identifier = varchar("origin_identifier").bindTo { it.identifier }
     val startedAt = timestamp("started_at").bindTo { it.startedAt }
     val title = varchar("title").bindTo { it.title }
+    val assocVersionId = int("assoc_version_id").bindTo { it.assocVersion?.id }
     val status = enum<UploadStatus>("status").bindTo { it.status }
     val errorType = enum<UploadError>("error_type").bindTo { it.errorType }
     val errorDesc = varchar("error_desc").bindTo { it.errorDesc }

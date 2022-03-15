@@ -151,6 +151,7 @@ CREATE TABLE uploads (
     origin_identifier VARCHAR NOT NULL,
     started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     title VARCHAR,
+    assoc_version_id INT,
     status UFFN_UPLOAD_STATUS NOT NULL DEFAULT 'PENDING',
     error_type UFFN_UPLOAD_ERROR,
     error_desc VARCHAR,
@@ -159,7 +160,12 @@ CREATE TABLE uploads (
     CONSTRAINT fk_owner
         FOREIGN KEY (owner_id)
             REFERENCES users (id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_assoc_version
+        FOREIGN KEY (assoc_version_id)
+            REFERENCES story_versions (id)
+        ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX uploads_concurrent_user

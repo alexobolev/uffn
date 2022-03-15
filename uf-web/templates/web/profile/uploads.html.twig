@@ -19,20 +19,16 @@
 {#    </section>#}
 {#  {% endif %}#}
 
-  <section class="d-none">
-    <div id="uf-uploader"></div>
-  </section>
-
-  <section class="row mb-5">
+  <section class="row">
     <h3 class="my-3 mt-sm-4">Upload a story</h3>
-    <div class="text-muted small mb-sm-2">
+    <div class="text-muted small mb-sm-3">
       <p>You can only paste one supported link at a time; use server CLI for batch uploads.</p>
     </div>
-    <div class="col col-12 col-lg-7">
+    <div class="col col-12 col-lg-8">
       <div class="input-group">
         <input type="url" class="form-control" placeholder="Story or chapter link"
-               aria-label="Story or chapter URL" aria-describedby="uf-add-story">
-        <button type="button" class="btn btn-primary" id="uf-add-story">
+               aria-label="Story or chapter URL" aria-describedby="uf-add-story-btn" id="uf-add-story-url">
+        <button type="button" class="btn btn-primary" id="uf-add-story-btn">
           <span class="d-sm-none">Upload</span>
           <span class="d-none d-sm-inline">Upload story</span>
         </button>
@@ -40,28 +36,11 @@
     </div>
   </section>
 
-  <section class="row mb-5">
-    <h3 class="my-3 mt-sm-4">Current uploads</h3>
-    <div class="text-muted small mb-sm-4">
-      <p>Uploads are processed sequentially to avoid overloading the source archives' servers.</p>
-    </div>
-    <div class="col">
-      <section class="uf-uploads-section">
+  <section class="row">
+    <div class="col col-12 col-lg-8">
+      <section class="uf-uploads-section mt-5 pt-sm-3">
         <!-- React content -->
-        <div class="uf-uploads-block" id="uf-uploads-current"></div>
-      </section>
-    </div>
-  </section>
-
-  <section class="row mb-5">
-    <h3 class="my-3 mt-sm-4">Past uploads</h3>
-    <div class="text-muted small mb-sm-4">
-      <p>Log of successful uploads is cleaned up automatically after a while.</p>
-    </div>
-    <div class="col">
-      <section class="uf-uploads-section">
-        <!-- React content -->
-        <div class="uf-uploads-block" id="uf-uploads-previous"></div>
+        <div id="uf-uploader"></div>
       </section>
     </div>
   </section>
@@ -70,4 +49,12 @@
 
 {% block title %}
   {{ app.user.login }} - current uploads - {{ parent() }}
+{% endblock %}
+
+{% block head_extra %}
+  <script>
+      window.staticData = {
+          key: "{{ debug.sess_key }}"
+      };
+  </script>
 {% endblock %}

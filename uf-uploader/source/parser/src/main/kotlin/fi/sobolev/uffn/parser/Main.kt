@@ -8,6 +8,8 @@ import fi.sobolev.uffn.common.origins.ao3.toCommon
 import fi.sobolev.uffn.common.server.*
 import fi.sobolev.uffn.common.services.*
 import io.javalin.core.util.RouteOverviewUtil.metaInfo
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 import java.time.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -107,6 +109,7 @@ fun startRedisListener(config: Config.RedisConfig) {
                 upload.flushChanges()
 
                 conn.rpush(kNotificationQueue, uuid.toString())
+                runBlocking { delay(1000) }
 
                 try {
                     logger.info { "starting to parse AO3 story #${upload.identifier}"}
@@ -168,9 +171,12 @@ fun startRedisListener(config: Config.RedisConfig) {
                                 this.contents = ch.contents
                             }
                         }.forEach { chapters.add(it) }
+
+                        upload.assocVersion = version
+                        upload.title = version.title
+                        upload.status = UploadStatus.COMPLETED
                     }
 
-                    upload.status = UploadStatus.COMPLETED
                     logger.info { "finished parsing AO3 story #${upload.identifier}" }
 
                 } catch (ex: Exception) {

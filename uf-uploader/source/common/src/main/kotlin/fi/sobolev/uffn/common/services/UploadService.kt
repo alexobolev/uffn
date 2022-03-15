@@ -1,6 +1,8 @@
 package fi.sobolev.uffn.common.services
 
 import fi.sobolev.uffn.common.data.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.util.UUID
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
@@ -70,6 +72,7 @@ class LocalUploadService (
         val justCreated = uploads.find { it.guid eq upload.guid }
             ?: return Pair(null, "internal entity creation failed")
 
+        runBlocking { delay(1000) }
         redis.resource.use {
             it.rpush("uffn-fetch", upload.guid.toString())
         }

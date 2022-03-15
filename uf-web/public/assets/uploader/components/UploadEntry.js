@@ -10,6 +10,7 @@ export default class UploadEntry extends React.Component {
         super(props);
         this.item = props.itemData
         this.id = props.id;
+        this.onDeleteClick = props.onDeleteClick;
     }
 
     render() {
@@ -22,14 +23,15 @@ export default class UploadEntry extends React.Component {
         // "Full" title + meta, for when the upload is well in progress.
         if (item.niceTitle) {
             title = <>{ item.niceTitle }</>;
-            meta = <>{ archiveName(item.origin.archive) } - { item.origin.ident } - { item.timestamp }</>;
+            meta = <>{ archiveName(item.origin.archive) } <>&bull;</> { item.origin.ident } <>&bull;</> { item.timestamp }</>;
         }
 
         return (
             <div className={ `uf-uploads-entry ${ statusClass(item.status) }` } key={ item.guid }>
                 <div className='digest'>
                     <UploadEntryHeader title={ title } meta={ meta } />
-                    <UploadEntryFooter item={ item } id={ this.id } />
+                    <UploadEntryFooter item={ item } id={ this.id }
+                                       onDeleteClick={ (e) => { this.onDeleteClick(item.guid) } } />
                 </div>
             </div>
         );

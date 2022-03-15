@@ -10,7 +10,7 @@ import kotlinx.serialization.encoding.*
 
 object InstantSerializer : KSerializer<Instant> {
     private val dateFormatter = DateTimeFormatter
-        .ofPattern("HH:mm:ss.SSS dd/MM/uuuu")
+        .ofPattern("dd/MM/uuuu HH:mm:ss")
         .withZone(ZoneId.ofOffset("", ZoneOffset.UTC))
 
     override val descriptor = PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)

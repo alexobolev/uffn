@@ -116,15 +116,10 @@ class UploadRemoveRequest (
 
 @Serializable
 class UploadRemovedResponse (
-    val removed: MutableList<RemovedEntry> = mutableListOf(),
+    val removed: MutableList<String> = mutableListOf(),
     val failed: MutableList<ErrorEntry> = mutableListOf()
 ) : ServerPayload {
     override val code: String get() = "upload.removed"
-
-    @Serializable
-    data class RemovedEntry (
-        val guid: String,
-    )
 
     @Serializable
     data class ErrorEntry (
@@ -133,7 +128,7 @@ class UploadRemovedResponse (
     )
 
     fun addRemoved(guid: String) {
-        removed.add(RemovedEntry(guid))
+        removed.add(guid)
     }
     fun addFailed(guid: String, why: String) {
         failed.add(ErrorEntry(guid, reason = why))
@@ -161,7 +156,8 @@ data class UploadEntry (
     val status: Status,
     val niceTitle: String?,
     @Serializable(with = InstantSerializer::class)
-    val timestamp: Instant
+    val timestamp: Instant,
+    val versionId: Int?
 ) {
     constructor(entity: Upload) : this (
         guid = entity.guid,
@@ -169,7 +165,8 @@ data class UploadEntry (
         origin = Origin(entity.archive, entity.identifier),
         status = Status(entity.status, entity.errorType, entity.errorDesc),
         niceTitle = entity.title,
-        timestamp = entity.startedAt
+        timestamp = entity.startedAt,
+        versionId = entity.assocVersion?.id
     )
 
     @Serializable

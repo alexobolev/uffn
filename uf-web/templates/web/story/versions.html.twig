@@ -23,6 +23,8 @@
 
     {% for version in versions %}
 
+      {% set word_count = version.wordCount|number_format(0, '.', ',') ~ ' word(s)' %}
+
       {% set chapter_count = version.chapters|length == 1
           ? 'a single chapter'
           : (version.chapters|length ~ ' chapter(s)')
@@ -55,6 +57,7 @@
         secondary: '@ ' ~ version.archivedAt|date('d/m/Y H:i:s'),
         desc: chapter_desc|raw,
         meta: [
+          word_count,
           chapter_count,
           updated,
           archived,

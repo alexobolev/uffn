@@ -32,6 +32,9 @@ fun handleAuthLogin(ctrl: AuthController, ctx: WsContext, req: AuthLoginRequest)
     logger.info { "authenticated request from $remoteHost" }
     runBlocking { ctrl.sessions.addContext(ctx, user) }
 
+    logger.debug { "current idle timeout is ${ctx.session.idleTimeout}" }
+    ctx.session.idleTimeout = 15 * 60 * 1000  // don't drop a connection for quarter of an hour
+
     val response = AuthLoginSucceededResponse (
         uploads = ctrl.uploadService
             .findAllFor(owner = user)

@@ -1,5 +1,7 @@
 @use "sass:map";
 
+$enable-negative-margins: true;
+
 @import "../../node_modules/bootstrap/scss/functions";
 @import "../../node_modules/bootstrap/scss/variables";
 
@@ -46,7 +48,7 @@ $primary: map.get($theme-colors, primary);
 @import "../../node_modules/bootstrap/scss/alert";
 @import "../../node_modules/bootstrap/scss/progress";
 //@import "../../node_modules/bootstrap/scss/list-group";
-//@import "../../node_modules/bootstrap/scss/close";
+@import "../../node_modules/bootstrap/scss/close";
 //@import "../../node_modules/bootstrap/scss/toasts";
 //@import "../../node_modules/bootstrap/scss/modal";
 //@import "../../node_modules/bootstrap/scss/tooltip";
@@ -425,9 +427,18 @@ a {
 
     &.pending,
     &.cancelled {
-      //border-left-color: rgba($secondary, 0.1);
-      &:hover { border-left-color: rgba($secondary, 1); }
-      & > .digest .badge { @extend .bg-secondary; }
+      $accent-color: $gray-600;
+      $backlight-color: $gray-200;
+
+      border-left-color: $accent-color;
+
+      & > .digest {
+        background-color: lighten($backlight-color, 3.5%);
+        .badge { background-color: $accent-color; }
+      }
+      &:hover > .digest {
+        background-color: lighten($backlight-color, 0%);
+      }
     }
 
     &.fetching,
@@ -461,28 +472,34 @@ a {
       border-left-color: $accent-color;
 
       & > .digest {
-        background-color: lighten($backlight-color, 10%);
-        .badge { background-color: $accent-color; }
+        @include gradient-striped();
+        background-color: lighten($backlight-color, 4.5%);
+
+        .badge {
+          background-color: $accent-color;
+        }
       }
+
       &:hover > .digest {
-        background-color: lighten($backlight-color, 7.5%);
+        background-color: lighten($backlight-color, 1%);
       }
     }
 
     &.errored {
-      $border-color: $danger;
+      $accent-color: $red;
       $backlight-color: $red-100;
 
-      border-left-color: $border-color;
+      border-left-color: $accent-color;
 
       & > .digest {
-        background-color: lighten($backlight-color, 3.5%);
         @include gradient-striped();
+        background-color: lighten($backlight-color, 4%);
 
         .badge {
-          @extend .bg-danger;
+          background-color: $accent-color;
         }
       }
+
       &.open > .digest,
       &:hover > .digest {
         background-color: lighten($backlight-color, 1%);
@@ -521,20 +538,21 @@ a {
           a, span {
             @extend .text-decoration-none;
             font-weight: 600;
-            border-bottom: 1px dotted;
+            //border-bottom: 1px dotted;
+            cursor: default;
           }
         }
         .upload-meta {
           @extend .d-block;
           @extend .fst-italic;
           @extend .small;
-          @extend .pt-1;
+          //@extend .pt-1;
 
           text-overflow: ellipsis;
           overflow: hidden;
           white-space: nowrap;
 
-          color: $gray-700;
+          color: $gray-600;
 
           span.timestamp {
             @extend .d-inline-block;
@@ -547,6 +565,9 @@ a {
         @extend .align-items-end;
         @extend .align-items-sm-center;
         @extend .justify-content-between;
+
+        @extend .mt-n3;
+        @extend .mt-sm-0;
 
         @extend .pt-1;
         @extend .pt-sm-0;
