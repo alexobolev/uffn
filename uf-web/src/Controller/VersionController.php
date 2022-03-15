@@ -2,10 +2,13 @@
 namespace App\Controller;
 
 
+use App\Form\Type\DeleteEntityFormType;
 use App\Repository\ChapterRepository;
 use App\Entity\{Archive, Author, Chapter, Rating, Story, Version};
+use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\{ManagerRegistry, ObjectManager};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -163,13 +166,42 @@ class VersionController extends AbstractController {
         name: 'version_toc',
         requirements: ['id' => '\d+']
     )]
-    public function versionTOC(int $id): Response {
+    public function versionTableOfContents(int $id): Response {
         ['version' => $version, 'story' => $story, 'chapters' => $chapters]
             = $this->getVersionStoryAndChapters(versionId: $id);
 
         return $this->render('web/version/toc.html.twig', array_merge_recursive (
             $this->makeCommonPageData($story, $version, $chapters), [
                 'chapters' => $chapters
+            ]
+        ));
+    }
+
+    #[Route(
+        '/versions/{id}/delete',
+        name: 'version_delete',
+        requirements: ['id' => '\d+']
+    )]
+    public function versionDelete(int $id, Request $request): Response {
+        ['version' => $version, 'story' => $story, 'chapters' => $chapters]
+            = $this->getVersionStoryAndChapters(versionId: $id);
+
+        $deleteForm = $this->createForm(DeleteEntityFormType::class);
+        $deleteForm->handleRequest($request);
+
+        if ($deleteForm->isSubmitted() && $deleteForm->isValid()) {
+
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->doctrine->getManager();
+            $entityManager->remove($version);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('story_versions', [ 'id' => $story->getId() ]);
+        }
+
+        return $this->renderForm('web/version/delete.html.twig', array_merge_recursive (
+            $this->makeCommonPageData($story, $version, $chapters), [
+                'form' => $deleteForm
             ]
         ));
     }

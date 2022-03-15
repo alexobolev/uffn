@@ -1,0 +1,7 @@
+{% use 'form_div_layout.html.twig' %}
+
+{% block submit_widget %}
+  {% set my_class = 'btn btn-danger' %}
+  {% set attr = attr|merge({class: my_class}) %}
+  {{ parent() }}
+{% endblock %}

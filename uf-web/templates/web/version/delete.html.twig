@@ -1,0 +1,68 @@
+{% extends 'web/base.html.twig' %}
+
+
+{% set breadcrumbs %}
+  {% set story_link = path('version', { id: story.info.version_id }) %}
+  {% set story_title = story.info.title %}
+  {% set delete_link = path('version_delete', { id: story.info.version_id }) %}
+  &rarr; <a href="{{ story_link }}" class="uf-ellipsis" style="max-width: 250px;">{{ story_title }}</a>
+  &rarr; <a href="{{ delete_link }}">Remove</a>
+{% endset %}
+
+{% set main_contents %}
+  <div class="row">
+    <h3 class="py-3 pt-sm-4">
+      Delete story version
+    </h3>
+    <div class="text-muted small mb-sm-5">
+      <p class="mb-0">Completely remove <em>this</em> version of the story; others will remain accessible.</p>
+      <p class="text-danger">This action is irreversible. Are you sure you want to continue?</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      {% form_theme form 'web/_form/delete_theme.html.twig' %}
+      {{ form_start(form) }}
+        <div class="py-3 mb-sm-5">
+          {{ form_widget(form.delete, { 'label': 'Remove the version' }) }}
+        </div>
+      {{ form_end(form) }}
+    </div>
+  </div>
+{% endset %}
+
+
+
+{% block title %}
+  {{ story.info.title }} - delete version - {{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+  {# Topbar - breadcrumbs and user profile link #}
+  {% include 'web/common/_global_topbar.html.twig' with {
+    'breadcrumbs': breadcrumbs
+  } %}
+
+  {# Jumbo - page header and metadata #}
+  {% include 'web/version/_jumbo.html.twig' %}
+
+  {# User actions - a bunch of buttons #}
+  {% embed 'web/version/_user_actions.html.twig' %}
+    {% block versionNavLinks %}
+    {% endblock %}
+  {% endembed %}
+
+  {# Main content #}
+  <main class="uf-main">
+    <div class="container-md">
+      <div class="row">
+        {{ main_contents }}
+      </div>
+    </div>
+  </main>
+
+  {# Global footer - some links and a disclaimer #}
+  {% include 'web/common/_global_footer.html.twig' %}
+
+{% endblock %}

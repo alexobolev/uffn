@@ -1,0 +1,75 @@
+{% extends 'web/base.html.twig' %}
+
+
+{% set breadcrumbs %}
+  {% set story_link = path('story_versions', { id: story.id }) %}
+  {% set remove_link = path('story_delete', { id: story.id }) %}
+  &rarr; <a href="{{ story_link }}">{{ story.origin.archive }}://{{ story.origin.identifier }}</a>
+  &rarr; <a href="{{ remove_link }}">Remove</a>
+{% endset %}
+
+
+{% set story_actions %}
+  {% set edit_link = path('story_edit', { id: story.id }) %}
+  {% set versions_link = path('story_versions', { id: story.id }) %}
+  <a role="button" class="btn btn-light btn-sm me-1" target="_blank" href="{{ story._instance|story_link }}">Open source</a>
+  <a role="button" class="btn btn-warning btn-sm" href="{{ versions_link }}">Version list</a>
+{% endset %}
+
+
+{% set main_contents %}
+  <div class="row">
+    <h3 class="py-3 pt-sm-4">
+      Removing story
+      <strong class="ms-0 ms-sm-2 pt-1 pt-sm-0 d-inline-block">
+        {{ story.origin.archive }}://{{ story.origin.identifier }}
+      </strong>
+    </h3>
+    <div class="text-muted small mb-sm-5">
+      <p class="mb-0">Completely remove this story, all its associated versions, and all list/collection entries.</p>
+      <p class="text-danger">This action is irreversible. Are you sure you want to continue?</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col col-12 col-lg-8 col-xl-7">
+      {% form_theme form 'web/_form/delete_theme.html.twig' %}
+      {{ form_start(form) }}
+        <div>
+          {{ form_widget(form.delete, { 'label': 'Remove story' }) }}
+        </div>
+      {{ form_end(form) }}
+    </div>
+  </div>
+{% endset %}
+
+
+
+{% block title %}
+  {{ story.origin.archive }}://{{ story.origin.identifier }} - remove - {{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+  {# Topbar - breadcrumbs and user profile link #}
+  {% include 'web/common/_global_topbar.html.twig' with {
+    'breadcrumbs': breadcrumbs
+  } %}
+
+  {# User actions - a bunch of buttons #}
+  {% embed 'web/story/_user_actions.html.twig' %}
+    {% block storyLinks %}
+      {{ story_actions }}
+    {% endblock %}
+  {% endembed %}
+
+  {# Main content #}
+  <main class="uf-main">
+    <div class="container-md">
+      {{ main_contents }}
+    </div>
+  </main>
+
+  {# Global footer - some links and a disclaimer #}
+  {% include 'web/common/_global_footer.html.twig' %}
+
+{% endblock %}

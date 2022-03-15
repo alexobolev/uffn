@@ -8,7 +8,8 @@
 
       {% set lists_link = '#' %}
       {% set edit_story_link = path('story_edit', { id: story.info.story_id }) %}
-      {% set versions_link = path('story_versions', { id: story.info.story_id }) %}
+      {% set all_versions_link = path('story_versions', { id: story.info.story_id }) %}
+      {% set delete_version_link = path('version_delete', { id: story.info.version_id }) %}
 
       <div class="btn-group ms-1">
         <a href="#" type="button" role="button" class="btn btn-warning btn-sm dropdown-toggle"
@@ -17,7 +18,8 @@
           <li><a class="dropdown-item small" href="{{ lists_link }}">Manage lists</a></li>
           <li><a class="dropdown-item small" href="{{ edit_story_link }}">Edit story</a></li>
           <li><hr class="dropdown-divider small"></li>
-          <li><a class="dropdown-item small" href="{{ versions_link }}">Other versions</a></li>
+          <li><a class="dropdown-item small" href="{{ all_versions_link }}">Other versions</a></li>
+          <li><a class="dropdown-item small text-danger" href="{{ delete_version_link }}">Delete version</a></li>
         </ul>
       </div>
 

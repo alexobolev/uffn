@@ -2,8 +2,10 @@
 namespace App\Controller;
 
 
+use App\Form\Type\DeleteEntityFormType;
 use App\Form\Type\RatingType;
 use App\Entity\{Archive, Author, Chapter, Rating, Story, Version};
+use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\{ManagerRegistry, ObjectManager};
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -138,6 +140,47 @@ class StoryController extends AbstractController {
             ],
             'form' => $form,
             'story_updated' => $storyUpdated
+        ]);
+    }
+
+    #[Route(
+        '/stories/{id}/delete',
+        name: 'story_delete',
+        requirements: ['id' => '\d+']
+    )]
+    public function delete(int $id, Request $request): Response {
+        $story = $this->doctrine
+            ->getRepository(Story::class)
+            ->find($id);
+
+        if (!$story) {
+            throw $this->createNotFoundException (
+                'no story found for id = ' . $id
+            );
+        }
+
+        $deleteForm = $this->createForm(DeleteEntityFormType::class);
+        $deleteForm->handleRequest($request);
+
+        if ($deleteForm->isSubmitted() && $deleteForm->isValid()) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->doctrine->getManager();
+            $entityManager->remove($story);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('profile');
+        }
+
+        return $this->renderForm('web/story/delete.html.twig', [
+            'story' => [
+                '_instance' => $story,
+                'id' => $story->getId(),
+                'origin' => [
+                    'archive' => $story->getOriginArchive()->value,
+                    'identifier' => $story->getOriginIdentifier()
+                ]
+            ],
+            'form' => $deleteForm,
         ]);
     }
 }

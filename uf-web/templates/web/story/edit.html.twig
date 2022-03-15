@@ -2,7 +2,7 @@
 
 
 {% set breadcrumbs %}
-  {% set story_link = path('story', { id: story.id }) %}
+  {% set story_link = path('story_versions', { id: story.id }) %}
   {% set edit_link = path('story_edit', { id: story.id }) %}
   &rarr; <a href="{{ story_link }}">{{ story.origin.archive }}://{{ story.origin.identifier }}</a>
   &rarr; <a href="{{ edit_link }}">Edit</a>
@@ -66,6 +66,7 @@
 
         <div>
           {{ form_widget(form.save, { 'label': 'Save changes' }) }}
+          <a class="btn btn-danger" href="{{ path('story_delete', { id: story.id }) }}">Delete story</a>
         </div>
 
       {{ form_end(form) }}
