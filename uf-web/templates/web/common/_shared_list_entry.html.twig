@@ -3,7 +3,7 @@
 
   <header>
 
-    {% if rating is defined and rating %}
+    {% if rating is defined %}
       <span class="me-2 rating {{ rating|rating_class }}">{{ rating|rating_name }}</span>
     {% endif %}
 

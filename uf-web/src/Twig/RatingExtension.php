@@ -16,12 +16,12 @@ class RatingExtension extends AbstractExtension
     }
 
     public function makeRatingName(?Rating $rating): string {
-        return $rating?->value ?? '';
+        return $rating?->value ?? '?';
     }
 
     public function makeRatingClass(?Rating $rating): string {
         if ($rating === null) {
-            return '';
+            return 'bg-dark';  // bootstrap-dependent hack, and that's ok
         }
         return match ($rating) {
             Rating::K => 'kids',

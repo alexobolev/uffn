@@ -1,7 +1,8 @@
 <?php
 namespace App\Twig;
 
-use App\Entity\{Archive, Story};
+use App\Entity\{Archive, Author, Story};
+use Doctrine\ORM\PersistentCollection;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
@@ -12,6 +13,7 @@ class StoryExtension extends AbstractExtension
         return [
             new TwigFilter('archive_name', [$this, 'makeArchiveName']),
             new TwigFilter('story_link', [$this, 'makeStoryLink']),
+            new TwigFilter('author_list', [$this, 'makeAuthorList']),
         ];
     }
 
@@ -25,5 +27,10 @@ class StoryExtension extends AbstractExtension
             Archive::FFN => 'https://www.fanfiction.net/s/%s',
         };
         return sprintf($urlTemplate, $story->getOriginIdentifier());
+    }
+
+    public function makeAuthorList(PersistentCollection $authors): string {
+        $names = array_map(fn(Author $author): string => $author->getName(), $authors->getValues());
+        return implode(', ', $names);
     }
 }

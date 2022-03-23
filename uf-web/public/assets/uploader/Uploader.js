@@ -92,7 +92,7 @@ export default class Uploader extends React.Component {
                         isLoading: false,
                         globalError: null,
                         localErrors: [],
-                        uploads: dictifyByGuid(message.payload.uploads)
+                        uploads: dictifyByGuid(message.payload.uploads ?? [])
                     });
                     break;
                 }

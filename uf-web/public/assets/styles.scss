@@ -22,6 +22,16 @@ $container-padding-x: 1rem;
 $theme-colors: map.merge($theme-colors, $theme-colors-override);
 $primary: map.get($theme-colors, primary);
 
+$uf-pagination-link-color: shift-color($primary, $link-shade-percentage);
+
+$pagination-color: $primary;
+$pagination-focus-box-shadow: none;
+$pagination-focus-color: $uf-pagination-link-color;
+$pagination-hover-color: $uf-pagination-link-color;
+$pagination-active-bg: $primary;
+$pagination-active-border-color: $primary;
+
+
 @import "../../node_modules/bootstrap/scss/mixins";
 @import "../../node_modules/bootstrap/scss/utilities";
 @import "../../node_modules/bootstrap/scss/utilities/api";
@@ -818,7 +828,7 @@ a {
     @extend .small;
     @extend .fst-italic;
 
-    & p:last-of-type {
+    p, blockquote {
       @extend .mb-0;
     }
   }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Form\Model\PasswordChangeFormModel;
 use App\Form\Type\PasswordChangeFormType;
 use App\Repository\UploadSessionRepository;
+use App\Repository\VersionRepository;
 use Doctrine\ORM\EntityManager;
 use App\Entity\{UploadSession, User, Version};
 use DeviceDetector\DeviceDetector;
@@ -22,6 +23,8 @@ class ProfileController extends AbstractController {
     private ManagerRegistry $doctrine;
     private LoggerInterface $logger;
 
+    private const kFeedMaxPerPage = 25;
+
     public function __construct(ManagerRegistry $doctrine, LoggerInterface $logger) {
         $this->doctrine = $doctrine;
         $this->logger = $logger;
@@ -35,12 +38,28 @@ class ProfileController extends AbstractController {
 
 
     #[Route('/profile/feed', name: 'profile_feed')]
-    public function feed(): Response {
-        $versions = $this->doctrine
-            ->getRepository(Version::class)
-            ->findVisibleInArchivalOrder($this->getUser());
+    public function feed(Request $request): Response {
+
+        /** @var VersionRepository $repository */
+        $repository = $this->doctrine->getRepository(Version::class);
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $pageIndex = $request->query->getInt('page', default: 1);
+        if ($pageIndex < 1) { $pageIndex = 1; }
+
+        $versionCount = $repository->countLastOfStoryUploaded(owner: $user);
+        $versions = $repository->findLastOfStoryUploadedInReverseArchivalOrderLimited (
+            owner: $user,
+            offset: ($pageIndex - 1) * self::kFeedMaxPerPage,
+            limit: self::kFeedMaxPerPage
+        );
 
         return $this->render('web/profile/feed.html.twig', [
+            'pagination' => [
+                'total' => ceil($versionCount / self::kFeedMaxPerPage),
+                'current' => $pageIndex
+            ],
             'versions' => $versions
         ]);
     }

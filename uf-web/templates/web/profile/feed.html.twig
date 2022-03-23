@@ -2,53 +2,95 @@
 {% set active_nav_key = 'feed' %}
 
 
+{# https://gist.github.com/maxpou/612359ed4af4cc5c4f06?permalink_comment_id=3694029#gistcomment-3694029 #}
+{% macro pagination(total, current, pageQueryParam = 'page', nearbyPagesLimit = 5) %}
+  {% if total > 1 %}
+    <ul class="pagination justify-content-end">
+      {% for i in 1..total %}
+        {% if 0 == (current - nearbyPagesLimit) - loop.index %}
+          <li class="page-item">
+            <a href="{{ (app.request.pathInfo ~ '?' ~ (app.request.query.all|merge({(pageQueryParam): 1})|url_encode))|e }}" class="page-link">1</a>
+          </li>
+          {% if 1 != loop.index %}
+            <li class="page-item">
+              <a href="javascript:void(0)" class="page-link">...</a>
+            </li>
+          {% endif %}
+        {% elseif 0 == (current + nearbyPagesLimit) - loop.index  and (current + nearbyPagesLimit) < total %}
+          <li class="page-item">
+            <a href="javascript:void(0)" class="page-link">...</a>
+          </li>
+        {% elseif 0 < (current - nearbyPagesLimit) - loop.index %}
+        {% elseif 0 > (current + nearbyPagesLimit) - loop.index %}
+        {% else %}
+          <li class="page-item{{ current == loop.index ? ' active' }}">
+            <a href="{{ (app.request.pathInfo ~ '?' ~ (app.request.query.all|merge({(pageQueryParam): loop.index})|url_encode))|e }}" class="page-link">{{ loop.index }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      {% if current != total  and (current + nearbyPagesLimit) < total %}
+        <li class="page-item"><a href="{{ (app.request.pathInfo ~ '?' ~ (app.request.query.all|merge({(pageQueryParam): total})|url_encode))|e }}" class="page-link">{{ total }}</a></li>
+      {% endif %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
+
 {% block breadcrumbs %}
   {{ parent() }}
   &rarr; <a href="{{ path('profile_feed') }}">Feed</a>
 {% endblock %}
 
 {% block main_contents %}
-  <h3 class="py-3 pt-sm-4 pb-sm-5">
-    Accessible stories
-    <span class="badge rounded-pill bg-secondary ms-2 ms-sm-4">{{ versions|length }}</span>
-  </h3>
+  <h3 class="my-3 mb-sm-4 mb-sm-5">My stories</h3>
   <div class="row">
-    <div class="col col-12 col-sm-8 col-md-7 col-lg-6">
-
-      <div class="alert alert-warning">
-        <p class="mb-0"><strong>Warning:</strong> this is a temporary page.</p>
-      </div>
+    <div class="col">
 
       {% for version in versions %}
 
-        {% set not_my_story = version.story.owner != app.user %}
+        {% set word_count %}
+          {{ version.wordCount|number_format(0, '.', ',') }} word(s)
+        {% endset %}
 
-        {% set additional_style %}
-          {% if not_my_story %}
-            border-style: dashed !important;
-          {% endif %}
+{#        {% set chapter_count = version.chapters|length == 1#}
+{#          ? 'a single chapter'#}
+{#          : (version.chapters|length ~ ' chapter(s)')#}
+{#        %}#}
+
+        {% set updated %}
+          {{ (version.isCompleted ? 'completed' : 'updated') }}
+          {{ version.updatedAt|date('d/m/Y') }}
         {% endset %}
 
         {% set meta = [
           version.story.originArchive|archive_name,
-          { key: 'ID', value: version.story.originIdentifier }
+          word_count,
+          updated
         ] %}
-
-        {% if not_my_story %}
-          {% set meta = meta|merge([ '<i class="bi bi-person-fill"></i> ' ~ version.story.owner.login ]) %}
-        {% endif %}
 
         {% include 'web/common/_shared_list_entry.html.twig' with {
           link: path('version', { id: version.id }),
           title: version.title,
-          rating: version.rating,
-          meta: meta|raw,
-          additional_style: additional_style
+          rating: version.story.rating ?? version.rating,
+          secondary: 'by ' ~ version.authors|author_list,
+          desc: (story.summary ?? version.summary|raw|u.truncate(300, ' ...', false))|raw,
+          meta: meta|raw
         } %}
 
       {% endfor %}
     </div>
   </div>
+
+  {% if pagination.total > 1 %}
+    <div class="row mt-3 mt-sm-4 pt-sm-1">
+      <div class="col text-center">
+        <nav>
+          {{ _self.pagination(pagination.total, pagination.current) }}
+        </nav>
+      </div>
+    </div>
+  {% endif %}
+
 {% endblock %}
 
 {% block title %}
