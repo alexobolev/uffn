@@ -1,16 +1,17 @@
 package fi.sobolev.uffn.sockets
 
+import com.sksamuel.hoplite.*
 import fi.sobolev.uffn.common.*
 import fi.sobolev.uffn.common.server.*
 import fi.sobolev.uffn.common.services.*
 
 import io.javalin.Javalin
-import kotlinx.coroutines.delay
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+import kotlin.io.path.Path
 
 
 private lateinit var sessionRegistry: SessionRegistry
@@ -26,25 +27,7 @@ fun main(args: Array<String>) {
     // fixes a null pointer exception in json serialization
     System.setProperty("kotlinx.serialization.json.pool.size", (1024 * 1024).toString())
 
-    gAppConfig = Config (
-        database = Config.PostgresConfig (
-            host = "localhost",
-            port = 25001,
-            user = "argon",
-            pass = "qwerty",
-            name = "dev_uffn"
-        ),
-        redis = Config.RedisConfig (
-            host = "localhost",
-            port = 25000,
-            interval = 5,
-            maxTotal = 16
-        ),
-        websockets = Config.WsConfig (
-            port = 7070
-        )
-    )
-
+    gAppConfig = makeConfig(args)
     gDbConn = makeDbConnection(gAppConfig.database)
     gRedisConn = makeRedisConnection(gAppConfig.redis)
     sessionRegistry = DefaultSessionRegistry()
@@ -57,6 +40,12 @@ fun main(args: Array<String>) {
     startJavalinApp(gAppConfig.websockets)
 }
 
+
+/**
+ * Instantiate controllers for handling
+ * websocket "requests" - which represent
+ * the majority of expected websocket traffic.
+ */
 fun makeControllers(): Map<String, BaseController> {
     val uploadService = LocalUploadService(gDbConn, gRedisConn)
     val sessionService = LocalSessionService(gDbConn)

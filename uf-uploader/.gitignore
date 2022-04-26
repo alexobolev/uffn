@@ -122,3 +122,5 @@ fabric.properties
 
 .idea/codeStyles/
 target/
+uf-uploader.yml
+uf-uploader.*.yml

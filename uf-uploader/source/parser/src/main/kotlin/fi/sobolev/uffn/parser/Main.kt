@@ -5,9 +5,7 @@ import fi.sobolev.uffn.common.data.*
 import fi.sobolev.uffn.common.fetching.StaticBrowser
 import fi.sobolev.uffn.common.origins.ao3.AO3Parser
 import fi.sobolev.uffn.common.origins.ao3.toCommon
-import fi.sobolev.uffn.common.server.*
 import fi.sobolev.uffn.common.services.*
-import io.javalin.core.util.RouteOverviewUtil.metaInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
@@ -17,36 +15,19 @@ import mu.KotlinLogging
 import org.ktorm.dsl.*
 import org.ktorm.entity.*
 
-private val shouldShutdown =  AtomicBoolean(false)
+private val shouldShutdown = AtomicBoolean(false)
 private val logger = KotlinLogging.logger {}
 
 
 fun main(args: Array<String>) {
 
-    gAppConfig = Config (
-        database = Config.PostgresConfig (
-            host = "localhost",
-            port = 25001,
-            user = "argon",
-            pass = "qwerty",
-            name = "dev_uffn"
-        ),
-        redis = Config.RedisConfig (
-            host = "localhost",
-            port = 25000,
-            interval = 5,
-            maxTotal = 16
-        ),
-        websockets = Config.WsConfig (
-            port = 7070
-        )
-    )
-
+    gAppConfig = makeConfig(args)
     gDbConn = makeDbConnection(gAppConfig.database)
     gRedisConn = makeRedisConnection(gAppConfig.redis)
 
     startRedisListener(gAppConfig.redis)
 }
+
 
 fun startRedisListener(config: Config.RedisConfig) {
     val thisThread = Thread.currentThread()
