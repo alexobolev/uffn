@@ -120,4 +120,5 @@ fabric.properties
 
 # ADDED:
 
+.idea/codeStyles/
 target/
