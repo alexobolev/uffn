@@ -124,3 +124,4 @@ fabric.properties
 target/
 uf-uploader.yml
 uf-uploader.*.yml
+dependency-reduced-pom.xml

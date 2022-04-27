@@ -1,10 +1,8 @@
 package fi.sobolev.uffn.common
 
-import com.sksamuel.hoplite.ConfigLoader
-import com.sksamuel.hoplite.addCommandLineSource
-import com.sksamuel.hoplite.addEnvironmentSource
-import com.sksamuel.hoplite.addPathSource
+import com.sksamuel.hoplite.*
 import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 
 /**
@@ -38,16 +36,17 @@ data class Config (
 
 
 /**
- * Load configuration from multiple sources,
- * including command line, environment,
- * and yaml configs in the working directory.
+ * Load configuration from a cascade of config files.
  */
 fun makeConfig(cli: Array<String>) : Config {
-    return ConfigLoader.Builder()
-        .addCommandLineSource(cli)
-        .addEnvironmentSource()
-        .addPathSource(Path("uf-uploader.yml"), optional = true)
-        .addPathSource(Path("uf-uploader.dev.yml"), optional = true)
+    val cwd = Path("").toAbsolutePath()
+//    println("DEBUG: cwd = $cwd")
+
+    return ConfigLoaderBuilder.default()
+//        .addCommandLineSource(cli)
+        .addPathSource(cwd.resolve("uf-uploader.yml"), optional = true)
+        .addPathSource(cwd.resolve("uf-uploader.dev.yml"), optional = true)
+        .addPathSource(cwd.resolve("uf-uploader.prod.yml"), optional = true)
         .build()
         .loadConfigOrThrow<Config>()
 }
