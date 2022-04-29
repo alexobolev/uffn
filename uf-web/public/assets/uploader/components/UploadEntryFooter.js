@@ -1,6 +1,6 @@
 import React from "react"
 import UploadEntryButton from "./UploadEntryButton";
-import {statusName} from "../misc/mappings";
+import {statusName} from "../misc/Mappings";
 
 
 function UploadEntryBadge(props) {

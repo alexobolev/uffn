@@ -1,6 +1,6 @@
 import React from "react"
 
-import {archiveFullName, archiveName, statusClass} from "../misc/mappings";
+import {archiveFullName, archiveName, statusClass} from "../misc/Mappings";
 import UploadEntryHeader from "./UploadEntryHeader";
 import UploadEntryFooter from "./UploadEntryFooter";
 

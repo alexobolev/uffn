@@ -1,2 +1,5 @@
 app/*-dev.yml
 app/*.local.*
+*.local.sh
+*.local.ps1
+*.local.bat

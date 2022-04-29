@@ -15,22 +15,22 @@ data class Config (
     val websockets: WsConfig
 ) {
     data class PostgresConfig (
-        val host: String,
-        val port: Int,
+        val host: String = "localhost",
+        val port: Int = 5432,
+        val name: String = "uffn",
         val user: String,
         val pass: String,
-        val name: String
     )
 
     data class RedisConfig (
-        val host: String,
-        val port: Int,
-        val interval: Int,
-        val maxTotal: Int
+        val host: String = "localhost",
+        val port: Int = 6379,
+        val interval: Int = 5,
+        val maxTotal: Int = 16
     )
 
     data class WsConfig (
-        val port: Int
+        val port: Int = 7070
     )
 }
 
@@ -43,7 +43,8 @@ fun makeConfig(cli: Array<String>) : Config {
 //    println("DEBUG: cwd = $cwd")
 
     return ConfigLoaderBuilder.default()
-//        .addCommandLineSource(cli)
+        .addCommandLineSource(cli)
+        .addEnvironmentSource(useUnderscoresAsSeparator = true, allowUppercaseNames = true)
         .addPathSource(cwd.resolve("uf-uploader.yml"), optional = true)
         .addPathSource(cwd.resolve("uf-uploader.dev.yml"), optional = true)
         .addPathSource(cwd.resolve("uf-uploader.prod.yml"), optional = true)
