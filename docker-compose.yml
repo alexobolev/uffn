@@ -7,6 +7,7 @@ services:
       - "443:443"
     depends_on:
       - web
+      - sockets
     volumes:
       - web_assets:/var/www/html/public/dist:ro
   web:
@@ -18,10 +19,51 @@ services:
       - APP_ENV=${SYMFONY_ENV}
       - APP_SECRET=${SYMFONY_SECRET}
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/uffn
+      - WEBSOCKET_URL=/ws/upload
     depends_on:
+      - sockets
       - db
     volumes:
       - web_assets:/var/www/html/public/dist
+  sockets:
+    build: ./uf-uploader
+    restart: always
+    expose:
+      - "7070"
+    environment:
+      - DATABASE__HOST=db
+      - DATABASE__PORT=5432
+      - DATABASE__NAME=uffn
+      - DATABASE__USER=${DB_USER}
+      - DATABASE__PASS=${DB_PASSWORD}
+      - REDIS__HOST=redis
+      - REDIS__PORT=6379
+      - REDIS__INTERVAL=5
+      - REDIS__MAXTOTAL=16
+      - WEBSOCKETS__PORT=7070
+    command: java -jar uffn-sockets-all.jar
+    depends_on:
+      - parser
+      - redis
+      - db
+  parser:
+    build: ./uf-uploader
+    restart: always
+    environment:
+      - DATABASE__HOST=db
+      - DATABASE__PORT=5432
+      - DATABASE__NAME=uffn
+      - DATABASE__USER=${DB_USER}
+      - DATABASE__PASS=${DB_PASSWORD}
+      - REDIS__HOST=redis
+      - REDIS__PORT=6379
+      - REDIS__INTERVAL=5
+      - REDIS__MAXTOTAL=16
+      - WEBSOCKETS__PORT=7070
+    command: java -jar uffn-parser-all.jar
+    depends_on:
+      - redis
+      - db
   db:
     build: ./app/database
     restart: always
@@ -31,10 +73,10 @@ services:
       - POSTGRES_DB=uffn
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-  # redis:
-  #   image: redis:alpine
-  #   restart: always
-  #   expose:
-  #     - "6379"
+  redis:
+    image: redis:alpine
+    restart: always
+    expose:
+      - "6379"
 volumes:
   web_assets:

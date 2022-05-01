@@ -102,6 +102,10 @@ class ProfileController extends AbstractController {
 
         return $this->render('web/profile/uploads.html.twig', [
             'upload_session' => $uploadSession,
+            'local_data' => [
+                'sess_key' => $uploadKey,
+                'ws_url' => $this->getParameter('app.websocket_url')
+            ],
             'debug' => [ 'sess_key' => $uploadKey ]
         ]);
     }

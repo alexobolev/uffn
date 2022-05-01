@@ -2,6 +2,8 @@ FROM node:18-alpine AS node-assets
 
 COPY . /var/uf
 
+RUN rm -rf /var/uf/public/dist || true
+
 WORKDIR /var/uf
 
 RUN npm install && npm run build
@@ -27,9 +29,13 @@ RUN apk add --no-cache \
     apk del --purge \
         build-base
 
+SHELL ["/bin/bash", "-c"]
+
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 COPY --chown=www-data:www-data . /var/www/html
+
+RUN rm /var/www/html/public/dist/* || true
 
 COPY --chown=www-data:www-data --from=node-assets /var/uf/public/dist/* /var/www/html/public/dist/
 

@@ -22,10 +22,13 @@ export default class Uploader extends React.Component {
     constructor(props) {
         super(props);
 
-        this.authKey = window.staticData.key
+        this.authKey = window.staticData.key;
+        this.wsUrlPostfix = window.staticData.ws;
 
         this.uploadInput = document.getElementById("uf-add-story-url");
         this.uploadBtn = document.getElementById("uf-add-story-btn");
+
+        this.webSocket = null;
 
         this.handleUploadCreation = this.handleUploadCreation.bind(this);
         this.handleUploadRemoval = this.handleUploadRemoval.bind(this);
@@ -54,7 +57,6 @@ export default class Uploader extends React.Component {
                 "urls": [ link ]
             }
         };
-        console.log(requestData);
 
         this.webSocket?.send(JSON.stringify(requestData));
     }
@@ -71,10 +73,19 @@ export default class Uploader extends React.Component {
 
     componentDidMount() {
 
-        // this.webSocket = new WebSocket("ws://" + location.host + "/ws/upload");
-        this.webSocket = new WebSocket("ws://" + location.hostname + ":" + 7070 + "/upload");
+        const getWebsocketProtocol = () => {
+            if (window.location.protocol.toLowerCase() === 'https:') {
+                return 'wss';
+            } else {
+                return 'ws';
+            }
+        };
 
-        this.webSocket.onopen = (event) => {
+        const wsUrl = getWebsocketProtocol() + "://" + location.hostname + this.wsUrlPostfix;
+        console.log("connecting to websocket server at '" + wsUrl + "'...");
+        this.webSocket = new WebSocket(wsUrl);
+
+        this.webSocket.onopen = () => {
             this.webSocket.send(JSON.stringify({
                 "request": "auth.login",
                 "payload": { "key": this.authKey }
@@ -175,7 +186,7 @@ export default class Uploader extends React.Component {
             }
         };
 
-        this.uploadBtnHandler = (e) => {
+        this.uploadBtnHandler = () => {
             const linkText = this.uploadInput.value;
             if (linkText !== null) {
                 this.uploadInput.value = "";

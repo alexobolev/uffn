@@ -139,7 +139,9 @@ fun startRedisListener(config: Config.RedisConfig) {
 }
 
 fun startJavalinApp(config: Config.WsConfig) {
-    val app = Javalin.create().start(config.port)
+    val app = Javalin.create {
+//        it.enableDevLogging()
+    }.start(config.port)
 
     app.ws("/upload") { ws ->
         ws.onConnect { ctx ->

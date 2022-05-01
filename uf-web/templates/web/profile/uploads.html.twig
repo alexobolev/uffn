@@ -54,7 +54,8 @@
 {% block head_extra %}
   <script>
       window.staticData = {
-          key: "{{ debug.sess_key }}"
+          key: "{{ local_data.sess_key }}",
+          ws: "{{ local_data.ws_url }}"
       };
   </script>
 {% endblock %}

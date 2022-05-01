@@ -3,3 +3,5 @@ app/*.local.*
 *.local.sh
 *.local.ps1
 *.local.bat
+.env
+.prod.env
