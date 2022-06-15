@@ -64,7 +64,7 @@ class VersionRepository extends ServiceEntityRepository {
     /**
      * Get most recently archived version of a story.
      */
-    public function findMostRecent(Story $story) {
+    public function findMostRecent(Story $story): Version {
         $query = $this->_em
             ->createQuery(
                 'SELECT v

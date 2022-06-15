@@ -1,6 +1,5 @@
 package fi.sobolev.uffn.sockets
 
-import com.sksamuel.hoplite.*
 import fi.sobolev.uffn.common.*
 import fi.sobolev.uffn.common.server.*
 import fi.sobolev.uffn.common.services.*
@@ -11,7 +10,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import kotlin.io.path.Path
 
 
 private lateinit var sessionRegistry: SessionRegistry

@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Form\Type\DeleteEntityFormType;
 use App\Form\Type\RatingType;
-use App\Entity\{Archive, Author, Chapter, Rating, Story, Version};
+use App\Repository\StoryRepository;
+use App\Repository\VersionRepository;
+use App\Entity\{Story, Version};
 use Doctrine\ORM\EntityManager;
-use Doctrine\Persistence\{ManagerRegistry, ObjectManager};
+use Doctrine\Persistence\{ManagerRegistry};
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, SubmitType, TextareaType};
@@ -30,21 +32,23 @@ class StoryController extends AbstractController {
         requirements: ['id' => '\d+']
     )]
     public function index(int $id): Response {
-        $story = $this->doctrine
-            ->getRepository(Story::class)
-            ->find($id);
 
+        /** @var StoryRepository $stories */
+        /** @var VersionRepository $versions */
+        $stories = $this->doctrine->getRepository(Story::class);
+        $versions = $this->doctrine->getRepository(Version::class);
+
+        /* @var Story $story */
+        $story = $stories->find($id);
         if (!$story) {
             throw $this->createNotFoundException (
                 'no story found for id = ' . $id
             );
         }
 
-        $latestVersion = $this->doctrine
-            ->getRepository(Version::class)
-            ->findMostRecent($story);
-
+        $latestVersion = $versions->findMostRecent($story);
         return $this->redirectToRoute('version', ['id' => $latestVersion->getId()]);
+
     }
 
 
@@ -54,19 +58,21 @@ class StoryController extends AbstractController {
         requirements: ['id' => '\d+']
     )]
     public function versions(int $id): Response {
-        $story = $this->doctrine
-            ->getRepository(Story::class)
-            ->find($id);
 
+        /** @var StoryRepository $stories */
+        /** @var VersionRepository $versions */
+        $stories = $this->doctrine->getRepository(Story::class);
+        $versions = $this->doctrine->getRepository(Version::class);
+
+        /** @var Story $story */
+        $story = $stories->find($id);
         if (!$story) {
             throw $this->createNotFoundException (
                 'no story found for id = ' . $id
             );
         }
 
-        $versions = $this->doctrine
-            ->getRepository(Version::class)
-            ->findAllSorted($story);
+        $sortedVersions = $versions->findAllSorted($story);
 
         return $this->render('web/story/versions.html.twig', [
             'story' => [
@@ -85,8 +91,9 @@ class StoryController extends AbstractController {
                     'rating' => $story->getRating(),
                 ]
             ],
-            'versions' => $versions,
+            'versions' => $sortedVersions,
         ]);
+
     }
 
 
