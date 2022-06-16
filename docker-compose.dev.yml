@@ -21,6 +21,9 @@ services:
     restart: always
     expose:
       - "9000"
+    ports:
+      - "25022:22"
+      - "25222:10222"
     environment:
       - APP_ENV=dev
       - APP_SECRET=a7c83cddff28a2b51d59a92b4a419c92
