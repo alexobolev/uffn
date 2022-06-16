@@ -1,0 +1,104 @@
+version: "3.9"
+services:
+  gateway:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+      - sockets
+    volumes:
+      - type: bind
+        source: ./uf-web/public/dist/
+        target: /var/www/html/public/dist/
+      - type: bind
+        source: ./app/gateway
+        target: /etc/nginx/conf.d/
+  web:
+    build:
+      context: ./uf-web
+      dockerfile: Dockerfile.dev
+    restart: always
+    expose:
+      - "9000"
+    environment:
+      - APP_ENV=dev
+      - APP_SECRET=a7c83cddff28a2b51d59a92b4a419c92
+      - DATABASE_URL=postgresql://uffn_dev:password@db:5432/uffn_dev
+      - WEBSOCKET_URL=/ws/upload
+    depends_on:
+      - sockets
+      - db
+    volumes:
+      - type: bind
+        source: ./uf-web/
+        target: /var/www/html/
+  sockets:
+    build:
+      context: ./uf-uploader
+      dockerfile: Dockerfile.dev
+    stdin_open: true
+    tty: true
+    command: /bin/sh
+    restart: always
+    expose:
+      - "7070"
+    environment:
+      - DATABASE__HOST=db
+      - DATABASE__PORT=5432
+      - DATABASE__NAME=uffn_dev
+      - DATABASE__USER=uffn_dev
+      - DATABASE__PASS=password
+      - REDIS__HOST=redis
+      - REDIS__PORT=6379
+      - REDIS__INTERVAL=5
+      - REDIS__MAXTOTAL=16
+      - WEBSOCKETS__PORT=7070
+    depends_on:
+      - parser
+      - redis
+      - db
+    volumes:
+      - type: bind
+        source: ./uf-uploader
+        target: /var/uf/
+  parser:
+    build:
+      context: ./uf-uploader
+      dockerfile: Dockerfile.dev
+    stdin_open: true
+    tty: true
+    command: /bin/sh
+    restart: always
+    environment:
+      - DATABASE__HOST=db
+      - DATABASE__PORT=5432
+      - DATABASE__NAME=uffn_dev
+      - DATABASE__USER=uffn_dev
+      - DATABASE__PASS=password
+      - REDIS__HOST=redis
+      - REDIS__PORT=6379
+      - REDIS__INTERVAL=5
+      - REDIS__MAXTOTAL=16
+      - WEBSOCKETS__PORT=7070
+    depends_on:
+      - redis
+      - db
+    volumes:
+      - type: bind
+        source: ./uf-uploader
+        target: /var/uf/
+  db:
+    build: ./app/database
+    restart: always
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_DB=uffn_dev
+      - POSTGRES_USER=uffn_dev
+      - POSTGRES_PASSWORD=password
+  redis:
+    image: redis:alpine
+    restart: always
+    expose:
+      - "6379"
