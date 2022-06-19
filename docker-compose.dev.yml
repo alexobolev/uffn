@@ -37,12 +37,13 @@ services:
         source: ./uf-web/
         target: /var/www/html/
   sockets:
-    build:
-      context: ./uf-uploader
-      dockerfile: Dockerfile.dev
+    image: eclipse-temurin:18-alpine
     stdin_open: true
     tty: true
-    command: /bin/sh
+    working_dir: /var/uf
+    command: >
+      java -cp source/sockets/target/classes;source/common/target/classes
+        fi.sobolev.uffn.sockets.MainKt -Dcolor
     restart: always
     expose:
       - "7070"
@@ -66,12 +67,13 @@ services:
         source: ./uf-uploader
         target: /var/uf/
   parser:
-    build:
-      context: ./uf-uploader
-      dockerfile: Dockerfile.dev
+    image: eclipse-temurin:18-alpine
     stdin_open: true
     tty: true
-    command: /bin/sh
+    working_dir: /var/uf
+    command: >
+        java -cp ./source/parser/target/classes/;./source/parser/target/dependency/*
+          fi.sobolev.uffn.parser.MainKt -Dcolor
     restart: always
     environment:
       - DATABASE__HOST=db

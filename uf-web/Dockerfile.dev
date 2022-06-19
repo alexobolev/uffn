@@ -9,27 +9,12 @@ RUN apk add --no-cache \
         icu-dev \
         nodejs \
         npm \
-        openrc \
-        openssh \
     && docker-php-ext-install \
         gd \
         intl \
-        pdo_pgsql \
-        opcache
+        pdo_pgsql
 
 SHELL ["/bin/bash", "-c"]
-
-RUN mkdir -p /root/.ssh \
-        && chmod 0700 /root/.ssh \
-        && passwd -u root \
-        && echo 'root:password' | chpasswd \
-        && ssh-keygen -A \
-        && echo -e "LogLevel DEBUG3 \n" >> /etc/ssh/sshd_config \
-        && echo -e "PasswordAuthentication yes \n" >> /etc/ssh/sshd_config \
-        && echo -e "PermitEmptyPasswords yes \n" >> /etc/ssh/sshd_config \
-        && echo -e "PermitRootLogin yes \n" >> /etc/ssh/sshd_config \
-        && mkdir -p /run/openrc \
-        && touch /run/openrc/softlevel
 
 # USER www-data
 WORKDIR /var/www/html
@@ -37,5 +22,5 @@ WORKDIR /var/www/html
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 # CMD [ "php-fpm" ]
-ENTRYPOINT [ "sh", "-c", "rc-status; rc-update add syslog boot; rc-service syslog start; rc-service sshd start; php-fpm" ]
+ENTRYPOINT [ "sh", "-c", "php-fpm" ]
 EXPOSE 9000

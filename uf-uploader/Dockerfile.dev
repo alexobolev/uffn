@@ -1,5 +1,2 @@
-# FROM maven:3-eclipse-temurin-18-alpine
 FROM eclipse-temurin:18-alpine
-
 WORKDIR /var/uf
-RUN mkdir build/
